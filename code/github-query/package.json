@@ -1,0 +1,19 @@
+{
+  "name": "github-query",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "download-schema": "apollo schema:download --endpoint https://api.github.com/graphql --header \"Authorization: Bearer ${GITHUB_TOKEN}\"",
+    "codegen": "apollo client:codegen --localSchemaFile=./schema.json --addTypename --target=typescript --outputFlat src/graphql"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "apollo": "^2.6.0",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "graphql-tag": "^2.10.1"
+  }
+}
