@@ -191,33 +191,111 @@ Apolloは大枠としてはわかりやすく、第一歩で躓くことは少�
 皆さんは私のような思いはしてほしくない…俺の屍を越えてゆけ…！
 デバッグログとかもうちょっとなんか出力してくれないですかね…。
 
-公式ドキュメントは若干長ったらしく、そのくせ網羅的な解説ではないため、使っていい仕様と使わないほうがよい仕様がわかりにくいです。
-色々と理解してしまうと正しいことが書いてあることはわかるのですが…。
-掲載されているサンプルコードも抜粋が多く、全体像がわかりにくく、動作させられるサンプルがあるのか、それはどこなのかもわかりにくいです。
+公式ドキュメントは若干長ったらしく、そのくせ網羅的な解説ではありません。
+よって、使っていい仕様と使わないほうがよい仕様がわかりにくいです。
+色々と理解してしまうと正しいことが書いてあることは理解できるのですが…。
+掲載されているサンプルコードも抜粋が多く、全体像がわかりにくく、動作させられるサンプルがあるのかもわかりにくいです（だいたい無い印象）。
+
 さらに、Apolloはサーバ側もカバーしているため、サーバ側の話とクライアント側の話を区別する必要があります。
 特定のトピックに関して、サーバ側でのやり方は書いてあってもそれに対応するクライアント側のやり方が併記されていないことがほとんどです。
 さらに、基本的にはJavaScriptの話題しか見当たりません。
-ApolloはJavaやScalaやSwiftもサポートしているようなのですが、それらをやっていきたい人はさらに獣道を歩くことになりそうな気がします。
+ApolloはJavaやScalaやSwiftもサポートしているようなのですが、それらをやっていきたい人はさらに獣道を歩くことになるのではないでしょうか。
 
-総じて、やりたいことをパッと実現できなかった場合、コードを読みデバッガをお供に冒険する必要がありそうです。
+総じて、やりたいことをパッと実現できなかった場合、コードを読みデバッガをお供に冒険する必要があります。
 
-=== MutationとfetchMoreの謎
+=== QueryとfetchMoreの謎
 
-TODO
+まず困ったのがQueryとfetchMoreの対応関係です。
+無限読み込みできるリストを作ろう！ということで作ったのですが、fetchMoreの使い方が全然わかりません。
 
-@connection も謎だった。罠。
-Relay Cursor Connections Specificationとかあるし、自動的にデータの継ぎ足しをすることも可能であると思われる。
-しかし、期待に反して自動的に継ぎ足しはしてくれないのである。
+自分のGraphQLエンドポイントはRelay Cursor Connections Specification@<fn>{relay-connections}を踏襲しているし、@<code>{@connection}って自動継ぎ足しが可能なやつ…？と思ったんですがそんなことは全然なかった。
+ここは魔法を期待しすぎた箇所ですね。
 
-わかりにくい点。
- 1. 継ぎ足しのクエリは別途作成しなければならない。継ぎ足しに不要な部分を自動的に削って再利用してくれたりはしない。
- 2. 得られた継ぎ足しデータは最初のクエリの結果に自分で合成しなければならない。
- 3. 継ぎ足しを実行するのは関連するComponentではなくて最初のクエリの近くに配置したほうがよい。fetchMoreを引き回すのとどっちがいいかという話でしかないけど。
+//footnote[relay-connections][@<href>{https://facebook.github.io/relay/graphql/connections.htm}]
+
+実際に必要なのは次の2ステップです。
+
+ 1. 自分で継ぎ足し分を取得するQueryを書く。
+ 2. 自分で取得した結果を既存の結果と合成する。
+
+fetchMoreは自動継ぎ足しはしてくれません！
+とりあえずここだけ覚えて返ってください。
+fetchMoreはQueryと大きな差はなく、updateQueryで元のデータと継ぎ足し用データを合成して返すステップがあるだけです。
+
+ということを理解するまでにめっちゃ時間がかかった…。
+公式のPaginationの説明@<fn>{apollo-pagination}には必要なことが書いてあって、ここでやっていることを丸コピすればだいたいOKです。
+魔法はない、ないんだ…！
+
+//footnote[apollo-pagenation][@<href>{https://www.apollographql.com/docs/react/features/pagination.html}]
+
+期待していたけど存在しなかった魔法を晒しておきます。
+
+1つ目。
+継ぎ足し分を取得するQueryは自動生成される。
+Apolloは魔法たっぷり！だから自動でやってくれるかな？と思ったけどそんなことはなかった。
+Query中のPaginationが行われている箇所はRelay Cursor Connections Specificationに従っていれば検出可能である。
+複数候補がある場合でも、pathないし何らかの方法で該当箇所を明示可能である。
+そうしたら、Document中の不要な箇所は自動的に削除できるはずだし、Pagingする方法は一意だし、自動で継ぎ足しクエリを生成して実行してくれるのでは？
+と、いう仕様を想像すると、脳内では整合性が取れているのでそう実装されていてくれ…！@<code>{@connection}はそのための仕様か！？とか思ってしまうわけである。
+思い込みってこわい。
+
+2つ目。
+得られたデータは自分で合成しないといけない。
+これについてもRelay Cursor Connections Specificationに従っていれば自動的に合成可能なはずである。
+でもまぁそんなことはなかった。
+先入観抜きにサンプルコードを見ると普通に合成している。
+思い込みってこわい。
+
+その他、悩ましい点。
+画面内にPageとComponentという区分が存在するとして、可能な限りQueryの実行はPage単位で行いたい。
+よって、各ComponentはFragmentを持ち、Pageで合成することになる。
+で、fetchMoreの実装コードはQueryのそばに置くか、Fragmentのそばに置くか、どっちがいいんだろ？
+今のところ@<code>{<Query />}の近くに書いたほうがわかりやすいのでPage側に置いてます。
 
 === キャッシュとの戦い
 
-TODO
+はい。キャッシュというかローカルの状態管理の話なんですがあまり切り離せない話題ではあります。
+apollo-client 2.5以前ではapollo-link-state@<fn>{apollo-link-state}というパッケージとして独立していたようですが2.5からは本体に取り込まれたらしいです。
+最近参入勢なのでその辺はあまり知らない…！
+ローカルの状態管理をApolloでやること自体については公式のドキュメント@<fn>{apollo-local-state-1}@<fn>{apollo-local-state-2}を参照してください。
+これらドキュメント中で@<code>{cache.writeData}を使う例が出てきますが、後述する理由により罠だと考えていますのでそこだけ注意してください。
+
+//footnote[apollo-link-state][@<href>{https://www.npmjs.com/package/apollo-link-state}]
+//footnote[apollo-local-state-1][@<href>{https://www.apollographql.com/docs/tutorial/local-state.html}]
+//footnote[apollo-local-state-2][@<href>{https://www.apollographql.com/docs/react/essentials/local-state.html}]
+
+基本的にローカルの状態管理は、ネットワーク経由のAPIと同一のキャッシュに載ります。
+つまり、キャッシュが一種のDBとして機能するわけです。
+QueryやらMutationやらでローカルの状態変更を行うのは、それらの操作を通してキャッシュをread、writeしているに過ぎません。
+
+というわけで、キャッシュについての公式ドキュメント@<fn>{apollo-caching}を読みましょう。
+このドキュメントに書いてあることは信じてよいと思います。
+@<code>{cache.writeData}出てこないし…！
+
+//footnote[apollo-caching][@<href>{https://www.apollographql.com/docs/react/advanced/caching.html}]
+
+ハマりの説明に入りましょう。
+筆者が作っていた（いる）アプリは、任意のデータベースの中身をdumpしてJSONとして取得する動作が含まれています。
+任意のデータベースなので、もちろんスキーマは一定ではありません。
+そのため、@<code>{scalar JSON}というcustom scalar typeを作成しました。
+公式のドキュメント@<fn>{apollo-custom-scalar-type}にもこのやり方が（サーバ側に関してのみ）紹介されています。
+うーん、なるほど？
+
+//footnote[apollo-custom-scalar-type][@<href>{https://www.apollographql.com/docs/graphql-tools/scalars.html}]
+
+更に調べていくとクライアント側のcustom scalar typeサポートはまだ存在していません@<fn>{apollo-client-side-custrom-scalar}。
+サポートされていない、というのは値の形式変換が自動的にできないというだけで、実用上少し苦労する程度で済みます。
+
+//footnote[apollo-client-side-custrom-scalar][@<href>{https://github.com/apollographql/apollo-feature-requests/issues/2}]
+
+画面側の構成は、よくある左側にリストがあり、そこからアイテムを選択して右側で編集するという構成です。
+
+
+
+
 2.5から本体に取り込まれたらしい。
+
+
 cache.writeQueryとかcache.writeDataとかcache.writeFragmentとかマジでいろいろある…。
 TODO それぞれの違いの解説
 
@@ -245,7 +323,7 @@ abstract methodを定めている。
 
 apollo-cache-inmemoryは結構でっかい
 
-
+https://www.npmjs.com/package/optimism
 
 == 現時点でのベストプラクティス
 
