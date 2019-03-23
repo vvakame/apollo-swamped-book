@@ -2930,7 +2930,7 @@
           },
           {
             "name": "viewerCanRequestApproval",
-            "description": "Can the current viewer request this listing be reviewed for display in\nthe Marketplace.\n",
+            "description": "Can the current viewer request this listing be reviewed for display in\nthe Marketplace as verified.\n",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -14957,6 +14957,18 @@
                 "name": "GitObjectID",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "baseRepository",
+            "description": "The repository associated with this pull request's base Ref.",
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Repository",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -35559,7 +35571,7 @@
             "args": [
               {
                 "name": "ignoreTimeRange",
-                "description": "If true, the first issue will be returned even if it was opened outside of the collection's time range.",
+                "description": "If true, the first issue will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                 "type": {
                   "kind": "SCALAR",
                   "name": "Boolean",
@@ -35582,7 +35594,7 @@
             "args": [
               {
                 "name": "ignoreTimeRange",
-                "description": "If true, the first pull request will be returned even if it was opened outside of the collection's time range.",
+                "description": "If true, the first pull request will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                 "type": {
                   "kind": "SCALAR",
                   "name": "Boolean",
@@ -35605,7 +35617,7 @@
             "args": [
               {
                 "name": "ignoreTimeRange",
-                "description": "If true, the first repository will be returned even if it was opened outside of the collection's time range.",
+                "description": "If true, the first repository will be returned even if it was opened outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                 "type": {
                   "kind": "SCALAR",
                   "name": "Boolean",
@@ -35834,7 +35846,7 @@
             "args": [
               {
                 "name": "ignoreTimeRange",
-                "description": "If true, the contribution will be returned even if the user signed up outside of the collection's time range.",
+                "description": "If true, the contribution will be returned even if the user signed up outside of the collection's time range.\n\n**Upcoming Change on 2019-07-01 UTC**\n**Description:** `ignoreTimeRange` will be removed. Use a `ContributionsCollection` starting sufficiently far back\n**Reason:** ignore_time_range will be removed\n",
                 "type": {
                   "kind": "SCALAR",
                   "name": "Boolean",

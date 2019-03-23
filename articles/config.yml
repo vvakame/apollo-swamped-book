@@ -17,15 +17,15 @@ review_version: 3.0
 # inherit: ["A.yml", "B.yml"]
 
 # ブック名(ファイル名になるもの。ASCII範囲の文字を使用)
-bookname: ReVIEW-Template
+bookname: apollo-client-playaround
 # 記述言語。省略した場合はja
 language: ja
 
 # 書名
-booktitle: {name: "Re:VIEWテンプレート", file-as: "reviewテンプレート"}
+booktitle: {name: "Apolloドハマリ事件簿", file-as: "アポドロハマリジケンボ"}
 
 # 著者名。「, 」で区切って複数指定できる
-aut: [{name: "TechBooster編", file-as: "techboosterヘン"}]
+aut: [{name: "vvakame編", file-as: "ワカメヘン"}]
 
 # 以下はオプション
 # 以下はオプション(autと同じように配列書式で複数指定可能)。
@@ -47,7 +47,7 @@ aut: [{name: "TechBooster編", file-as: "techboosterヘン"}]
 # a-csl, csl: 監修者
 # a-dsr, dsr: デザイナ
 # a-edt, edt: 編集者
-edt: ["mhidaka"]
+edt: ["vvakame"]
 # a-ill, ill: イラストレータ
 # a-lyr, lyr: 歌詞作成者
 # a-mdc, mdc: メタデータセットの一次的責任者
@@ -56,7 +56,7 @@ edt: ["mhidaka"]
 # a-oth, oth: その他
 # a-pht, pht: 撮影責任者
 # a-pbl, pbl: 出版社（発行所）
-pbl: TechBooster
+pbl: ひかる黄金わかめ帝国
 # a-prt, prt: 印刷所
 # prt: TechBooster
 # a-red, red: 項目の枠組起草者
@@ -75,7 +75,7 @@ date: 2019-4-14
 history: [["2019-4-14 技術書典6版 v1.0.0"]]
 # 権利表記(配列で複数指定可)
 # rights: (C) 2016 Re:VIEW Developers
-rights: (C) 2017-2019 TechBooster
+rights: (C) 2019 vvakame
 # description: 説明
 # subject: 短い説明用タグ(配列で複数指定可)
 # type: 書籍のカテゴリーなど(配列で複数指定可)
