@@ -41,6 +41,9 @@ module.exports = grunt => {
 				},
 				command: `${reviewPreproc} -r --tabwidth=2 *.re`
 			},
+			preprocessDedent: {
+				command: `node ./scripts/dedent.js`
+			},
 			compile2text: {
 				options: {
 					execOptions: {
@@ -109,7 +112,7 @@ module.exports = grunt => {
 	});
 
 	function generateTask(target) {
-		return ["clean", "shell:preprocess", `shell:compile2${target}`];
+		return ["clean", "shell:preprocess", "shell:preprocessDedent", `shell:compile2${target}`];
 	}
 
 	grunt.registerTask(

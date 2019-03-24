@@ -4,6 +4,7 @@ PREDEF:
 CHAPS:
   - introduction.re
   - cache.re
+  - utilities.re
   - apollo-link.re
   - misc.re
 

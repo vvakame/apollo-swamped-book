@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`graphql-tools addCatchUndefinedToSchema 1`] = `
+Object {
+  "data": Object {
+    "foo": null,
+  },
+  "errors": Array [
+    [GraphQLError: Resolve function for "Query.foo" returned undefined],
+  ],
+}
+`;
+
+exports[`graphql-tools addMockFunctionsToSchema 1`] = `
+Object {
+  "data": Object {
+    "bar": 42,
+    "foo": "foo!",
+  },
+}
+`;
+
+exports[`graphql-tools makeExecutableSchema 1`] = `
+Object {
+  "data": Object {
+    "foo": "foo!",
+  },
+}
+`;
