@@ -1,0 +1,23 @@
+{
+  "name": "link-example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "download-schema": "apollo schema:download --endpoint https://api.github.com/graphql --header \"Authorization: Bearer ${GITHUB_TOKEN}\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "apollo": "^2.6.2",
+    "apollo-cache-inmemory": "^1.5.1",
+    "apollo-client": "^2.5.1",
+    "apollo-link": "^1.2.11",
+    "graphql": "^14.1.1",
+    "graphql-tools": "^4.0.4"
+  },
+  "devDependencies": {
+    "@types/graphql": "^14.0.7",
+    "typescript": "^3.3.4000"
+  }
+}

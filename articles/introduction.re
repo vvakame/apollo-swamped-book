@@ -112,6 +112,7 @@ Open API（Swagger）も似たようなことができますが、アプリケ�
 GraphQLの型情報を持ったファイル、と言った時、該当するものが複数あります。
 
 1つ目が主に拡張子.graphqlで表されるファイルで、中身は人間が読み書きするためのスキーマ定義です（@<list>{graphql-ext-example}）。
+GraphQL Schema Definition Language、略してGraphQL SDLと呼ばれている場合もあるようです。
 
 //list[graphql-ext-example][*.graphqlの例]{
 type Query {
@@ -133,6 +134,9 @@ JSONファイルはサーバ側のIntrospection APIを叩き、GraphQLの実装�
 筆者も駆け出しの頃に探したけどなかなか見つからず苦労したので今使っているスクリプトのgistにあげておきます。
 
 @<href>{https://gist.github.com/vvakame/0d92c9101e6db6fa6f5f2ab714bca00e}
+
+3つ目が、1つめのスキーマ定義をパースした結果のASTです。
+基本的にお目にかかることは少ないでしょう。
 
 ===[/column]
 
