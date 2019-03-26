@@ -65,7 +65,8 @@ sync版であるgraphqlSyncもありますが、GraphQL execution failed to comp
 
 //list[graphql][graphql関数]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,graphql)
-const result: ExecutionResult<IntrospectionQuery> = await graphql(schema, getIntrospectionQuery());
+const result: ExecutionResult<IntrospectionQuery> =
+  await graphql(schema, getIntrospectionQuery());
 #@end
 //}
 
@@ -78,7 +79,8 @@ schema.jsonを生成する時に使われているQueryですね。
 //list[getIntrospectionQuery][getIntrospectionQuery関数]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,getIntrospectionQuery)
 const introspectionQuery = getIntrospectionQuery();
-const result: ExecutionResult<IntrospectionQuery> = await graphql(schema, introspectionQuery);
+const result: ExecutionResult<IntrospectionQuery> =
+  await graphql(schema, introspectionQuery);
 const schemaJSONlike = result.data;
 #@end
 //}

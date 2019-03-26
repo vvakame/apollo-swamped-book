@@ -53,7 +53,8 @@ describe("graphql", () => {
 		const schema: GraphQLSchema = buildSchema(schemaStr);
 		// #@@range_begin(getIntrospectionQuery)
 		const introspectionQuery = getIntrospectionQuery();
-		const result: ExecutionResult<IntrospectionQuery> = await graphql(schema, introspectionQuery);
+		const result: ExecutionResult<IntrospectionQuery> =
+			await graphql(schema, introspectionQuery);
 		const schemaJSONlike = result.data;
 		// #@@range_end(getIntrospectionQuery)
 		expect(schemaJSONlike).not.toBeNull();
@@ -83,7 +84,8 @@ describe("graphql", () => {
 		`;
 		const schema: GraphQLSchema = buildSchema(schemaStr);
 		// #@@range_begin(graphql)
-		const result: ExecutionResult<IntrospectionQuery> = await graphql(schema, getIntrospectionQuery());
+		const result: ExecutionResult<IntrospectionQuery> =
+			await graphql(schema, getIntrospectionQuery());
 		// #@@range_end(graphql)
 		expect(result).toMatchSnapshot();
 		const schemaJSONlike = result.data;

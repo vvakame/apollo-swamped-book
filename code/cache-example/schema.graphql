@@ -1,0 +1,13 @@
+type Query {
+  cat(id: ID!): Cat
+  cats: [Cat!]
+}
+
+scalar JSON
+
+type Cat {
+  id: ID!
+  kind: String
+  name: String!
+  data: JSON
+}

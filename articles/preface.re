@@ -3,7 +3,7 @@
 技術書典5ではGraphQLサーバをGo言語で作るというネタをやりました。
 今回は、所変わってクライアント側を普通にReact+TypeScript+Apolloでクライアント側をやっていきつつある話をします。
 
-本書の内容は次のバージョンを前提に解説しています@fn<monorepo-versioning>。
+本書の内容は次のバージョンを前提に解説しています@<fn>{monorepo-versioning}。
 
 //footnote[monorepo-versioning][なんでmono repoなのにバージョンがちぐはぐなんだ…？]
 

@@ -38,10 +38,14 @@ export interface Operation {
 }
 // FetchResult の定義は割愛
 export declare type NextLink = (operation: Operation) => Observable<FetchResult>;
-export declare type RequestHandler = (operation: Operation, forward?: NextLink) => Observable<FetchResult> | null;
+export declare type RequestHandler =
+  (operation: Operation, forward?: NextLink) => Observable<FetchResult> | null;
 export declare class ApolloLink {
   constructor(request?: RequestHandler);
-  request(operation: Operation, forward?: NextLink): Observable<FetchResult> | null;
+  request(
+    operation: Operation,
+    forward?: NextLink,
+  ): Observable<FetchResult> | null;
 }
 //}
 
@@ -118,7 +122,14 @@ WebSocketがなかったら折角GraphQLにはSubscriptionという面白い仕�
 
 具体的に、Firestoreなどのクライアント側からsubscribe可能なマネージドサービスetcを準備します。
 サーバ側からは、そのPushサービスを介してクライアント側にIDと変更の種類（Created/Updated/Deleted）を送ります。
-クライアント側では、
+クライアント側では、IDから頑張ってQueryを逆算して、リクエストを投げ、その結果をSubscriptionの結果であるように誤魔化します。
 
-https://github.com/apollographql/graphql-subscriptions
+こうすることにより、WebSocketが利用できない環境でもGraphQL Subscriptionが使える…。
+かもしれない？というアイディアです。
+なかなか頭が悪そうなので実現させるためにはかなりの無茶と馬力が必要そうではあります。
 
+ざっくりした実装を@<href>{https://github.com/vvakame/til/pull/17}に置いておいたので興味があったら見てみてください。
+
+//comment{
+ * https://github.com/apollographql/graphql-subscriptions
+//}

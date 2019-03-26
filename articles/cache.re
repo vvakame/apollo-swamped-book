@@ -40,11 +40,30 @@ QueryやらMutationやらでローカルの状態変更を行うのは、それ�
 == cache.writeData, Query, Fragment
 
 ハマりの説明に入りましょう。
-筆者が作っていた（いる）アプリは、任意のデータベースの中身をdumpしてJSONとして取得する動作が含まれています。
+筆者が作っていた（いる）アプリは、任意のデータベースの中身を引っ張ってきてJSONとして取得できる動作が含まれています。
 任意のデータベースなので、もちろんスキーマは一定ではありません。
-そのため、@<code>{scalar JSON}というcustom scalar typeを作成しました。
+そのため、@<code>{scalar JSON}というcustom scalar typeを作成しました（@<list>{code/cache-example/schema.graphql}）。
+
+//list[code/cache-example/schema.graphql][こんなスキーマだと思って]{
+#@mapfile(../code/cache-example/schema.graphql)
+type Query {
+  cat(id: ID!): Cat
+  cats: [Cat!]
+}
+
+scalar JSON
+
+type Cat {
+  id: ID!
+  kind: String
+  name: String!
+  data: JSON
+}
+#@end
+//}
+
 公式のドキュメント@<fn>{apollo-custom-scalar-type}にもこのやり方が（サーバ側に関してのみ）紹介されています。
-うーん、なるほど？
+うーん、なるほど。
 
 //footnote[apollo-custom-scalar-type][@<href>{https://www.apollographql.com/docs/graphql-tools/scalars.html}]
 
@@ -53,44 +72,250 @@ QueryやらMutationやらでローカルの状態変更を行うのは、それ�
 
 //footnote[apollo-client-side-custrom-scalar][@<href>{https://github.com/apollographql/apollo-feature-requests/issues/2}]
 
-画面側の構成は、よくある左側にリストがあり、そこからアイテムを選択して右側で編集するという構成です。
-選択し編集する操作するため、選んだアイテムの情報をどこかに保持しておかなければなりません。
-これを実現するため、@<code>{@client}をつけたmutationで"現在編集中のアイテム"を状態として保持します。
+問題になるのは、キャッシュに対してこの形式のデータを書こうとした時です。
+ありがちな理由として、画面の左側にリストがあって、そこからアイテムを選択し、右側で編集したいとします。
+この操作を画面上で実現するためには、選んだアイテムの情報をどこかに保持しておかなければなりません。
+画面初期化時に、適当なデータをキャッシュに書き込む場合もあるでしょう。
 
-#@# TODO サンプルコードをこの辺に…
-
-この時、"現在編集中のアイテム"に@<code>{scalar JSON}なデータが含まれていた場合、問題が顕在化します。
-@<code>{cache.writeData}はスキーマレスなデータ@<strong>{しか}渡すことができません。
-また、apollo-clientは実行時にはスキーマに関する情報を持っていません。
-ここはかなり盲点ですね。
-Issueも書いてみた@<fn>{apollo-issue-4554}のですが、反応まるでないし@<code>{cache.writeQuery}か@<code>{cache.writeFragment}使え、で終わりそうではあります。
-#@# NOTE ROOT_QUERY にwriteFragment経由で書き込もうとする
-
-//footnote[apollo-issue-4554][@<href>{https://github.com/apollographql/apollo-client/issues/4554} まぁ筋の良い話ではなさそう]
+書き込み処理として、@<code>{cache.writeData}はスキーマレスなデータ@<strong>{しか}渡すことができません。
+また、cacheもclientも実行時にはスキーマに関する情報を保持していません（かなり盲点ですね）。
 
 さて、キャッシュのデータは必ずスキーマとセットで扱われます。
 @<code>{cache.writeData}では、このギャップを埋めるために@<code>{queryFromPojo}というユーティリティ関数を使って、データからスキーマをひねり出して使います。
-しかしながら、当然データのどの部分が@<code>{scalar JSON}なのかがわからないため、JSONの中まで見に行って@<code>{__typename}とか@<code>{id}がなくて大騒ぎになったりします。
+しかしながら、渡したデータのどの部分が@<code>{scalar JSON}なのかがわからないため、JSONの中まで見に行って@<code>{__typename}とか@<code>{id}がなくて大騒ぎになります（@<list>{code/cache-example/src/writeData.ts}）。
+
+//list[code/cache-example/src/writeData.ts][writeDataは危険なのです]{
+#@mapfile(../code/cache-example/src/writeData.ts)
+import { InMemoryCache } from "apollo-cache-inmemory";
+
+const cache = new InMemoryCache({
+  // Relay Global Object Identification に従い、IDだけで一意になるようにする
+  // InMemoryCacheのデフォルトだと `${obj.__typename}:${obj.id}` などが使われる
+  dataIdFromObject: obj => obj.id,
+});
+
+// 次のような __typename がないぞ！というエラーが2回出る
+// Missing field __typename in {
+//   "date": "2019/03/26",
+//   "event": "爪が伸びたのでかいぬしをプスってした"
+// }
+cache.writeData({
+  data: {
+    notExists: true, // schemaに存在しないデータもお咎めなし
+    cats: [
+      {
+        __typename: "Cat",
+        id: "Cat:yukari",
+        kind: "norway jan forest cat & ragdoll",
+        name: "yukari",
+        data: [
+          {
+            date: "2019/03/26",
+            event: "爪が伸びたのでかいぬしをプスってした",
+          },
+          {
+            date: "2019/03/27",
+            event: "あくびしてるところの写真を撮られた",
+          },
+        ],
+      },
+    ],
+  },
+});
+
+// 内部的に作成されたキャッシュは次の通り…
+// ROOT_QUERY
+// Cat:yukari
+// Cat:yukari.data.0 ←余計 JSONの中まで見てる
+// Cat:yukari.data.1 ←余計 JSONの中まで見てる
+Object.keys(cache.extract()).forEach(cacheKey => console.log(cacheKey));
+#@end
+//}
+
+この挙動はまったくもってtype safeではありません。
+ミスがあっても検出できないし、キャッシュの中身はぐちゃぐちゃになるし、最悪です。
+人類がこんなことで苦しまなければいけないのは馬鹿げていますね。
+
 この挙動はドキュメントには明記されていないように見えますし、ひたすらデバッガ片手に処理を追いかけていかないと原因がわかりませんでした。
 最終的に、設計思想と自分の実装にミスマッチがありうまく行っていないことがわかるまで非常に苦労しました。
-壊れたデータを書いてしまった場合でも怒られず、挙動はしっかりとおかしくなるし、一見関係ないところでQueryの結果がおかしくなるみたいな挙動になるので本当に罠みが高いです。
+壊れたデータを書いてしまった場合でも警告などが得られないパターンもあり、それなのに一見関係ないQueryで結果がおかしくなったりして本当に罠みが高いです。
 
 @<code>{cache.writeData}は罠！GraphQLでコードを書くというのにスキーマレスになりうるパーツを使うのは罪！
 そのことを強く胸に刻みこんで生きていきましょう。
+Issueも書いてみた@<fn>{apollo-issue-4554}のですが、反応まるでないし@<code>{cache.writeQuery}か@<code>{cache.writeFragment}使え、で終わりそうではあります。
+
+//footnote[apollo-issue-4554][@<href>{https://github.com/apollographql/apollo-client/issues/4554} まぁ筋の良い話ではなさそう]
 
 どういう方向性で実装するのがよかったかを解説します。
-@<code>{cache.writeQuery}か@<code>{cache.writeFragment}を常に使うのが正しいです。
-QueryかFragmentを与えると、書き込みたいデータに対してスキーマとして機能し、それに沿ってデータ形式が検査されます。
-つまり、QueryやFragmentをバリデータとして与えるという意味合いになります。
-QueryやFragmentは@<code>{apollo client:codegen}を使うことで間接的にスキーマに対して正しい形式であることを静的にチェックできます。
+@<code>{cache.writeFragment}か@<code>{cache.writeQuery}を常に使うのが正しいです。
+FragmentかQueryを与えると、書き込みたいデータに対してスキーマとして機能し、それに沿ってデータ形式が検査されます。
+つまり、FragmentやQueryをバリデータとして与えるという意味合いになります。
+これらは@<code>{apollo client:codegen}を使うことでデータがスキーマに対して正しい形式であることを間接的に、そして静的にチェックできます。
 
-ここでいうQueryやFragmentは、Apolloに何かをリクエストした時の実際にサーバに送られるQueryやFragmentと同一のものではありません。
-apollo-clientの中にキャッシュは常に1つであり、そこに対する書き込み、読み込みの型としてQueryやFragmentを流用しているに過ぎません。
+2つの使い分け方として、IDが判明している単一のデータの書き込みには@<code>{cache.writeFragment}を使い、そうでなければ@<code>{cache.writeQuery}を使うことになります。
+とりあえず@<code>{cache.writeFragment}を使って、それが無理な場合は@<code>{cache.writeQuery}を使う、と覚えてください。
+具体的に、@<list>{code/cache-example/src/writeFragment.ts}と@<list>{code/cache-example/src/writeQuery.ts}のように使います。
+型パラメータを指定するのを怠るとデータの形式が正しいかどうか検証されなくなってしまうので注意しましょう。
 
-2つの使い方として、IDが判明している単一のデータの書き込みには@<code>{cache.writeFragment}を使い、そうでなければ@<code>{cache.writeQuery}を使うことになります。
-とりあえず@<code>{cache.writeFragment}を使って、それが無理な場合は@<code>{cache.writeQuery}を使う、と覚えておくとよいでしょう。
+//list[code/cache-example/src/writeFragment.ts][writeFragmentの安全な使い方]{
+#@mapfile(../code/cache-example/src/writeFragment.ts)
+import gql from "graphql-tag";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { WriteCacheFragment } from "./graphql/WriteCacheFragment";
 
-#@# TODO writeFragmentの使い方とかを乗せる
+const cache = new InMemoryCache({
+  dataIdFromObject: obj => obj.id,
+});
+
+// apollo client:codegen が完走する→schemaに対して不正なQueryではないことがわかる
+// apolloが生成した型を型パラメータとして利用するとdataの書式もチェックできる
+cache.writeFragment<WriteCacheFragment>({
+  id: "Cat:yukari",
+  fragment: gql`
+    fragment WriteCacheFragment on Cat {
+      id
+      kind
+      name
+      data
+    }
+  `,
+  data: {
+    __typename: "Cat",
+    id: "Cat:yukari",
+    kind: "norway jan forest cat & ragdoll",
+    name: "yukari",
+    data: [
+      {
+        date: "2019/03/26",
+        event: "爪が伸びたのでかいぬしをプスってした",
+      },
+      {
+        date: "2019/03/27",
+        event: "あくびしてるところの写真を撮られた",
+      },
+    ],
+  },
+});
+
+// 内部的に作成されたキャッシュは次の通り
+// Cat:yukari
+Object.keys(cache.extract()).forEach(cacheKey => console.log(cacheKey));
+#@end
+//}
+
+//list[code/cache-example/src/writeQuery.ts][writeQueryの安全な使い方]{
+#@mapfile(../code/cache-example/src/writeQuery.ts)
+import gql from "graphql-tag";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { WriteCacheQuery } from "./graphql/WriteCacheQuery";
+
+const cache = new InMemoryCache({
+  dataIdFromObject: obj => obj.id,
+});
+
+// apollo client:codegen が完走する→schemaに対して不正なQueryではないことがわかる
+// apolloが生成した型を型パラメータとして利用するとdataの書式もチェックできる
+cache.writeQuery<WriteCacheQuery>({
+  query: gql`
+    query WriteCacheQuery {
+      cats {
+        id
+        kind
+        name
+        data
+      }
+    }
+  `,
+  data: {
+    // notExists: true, // ←型でエラーになる & 与えてもキャッシュに書く際に無視される
+    cats: [
+      {
+        __typename: "Cat",
+        id: "Cat:yukari",
+        kind: "norway jan forest cat & ragdoll",
+        name: "yukari",
+        data: [
+          {
+            date: "2019/03/26",
+            event: "爪が伸びたのでかいぬしをプスってした",
+          },
+          {
+            date: "2019/03/27",
+            event: "あくびしてるところの写真を撮られた",
+          },
+        ],
+      },
+    ],
+  },
+});
+
+// 内部的に作成されたキャッシュは次の通り キレイ！
+// Cat:yukari
+// ROOT_QUERY
+Object.keys(cache.extract()).forEach(cacheKey => console.log(cacheKey));
+#@end
+//}
+
+ここでのFragmentやQueryは、clientを使って何かをリクエストする時のFragmentやQueryと同一のものではありません。
+キャッシュ書き込みのための固有のパーツを用意してもいいですし、画面で使っているものを流用しても構いません。
+キャッシュのデータ実体は常に1つであり、そこに対する書き込み、読み込みの型としてFragmentやQueryを流用しています。
+FragmentやQuery毎にキャッシュが独立しているわけではないのです（@<list>{code/cache-example/src/queryAsASchema.ts}）。
+
+//list[code/cache-example/src/queryAsASchema.ts][キャッシュは常に1つ]{
+#@mapfile(../code/cache-example/src/queryAsASchema.ts)
+import gql from "graphql-tag";
+import { InMemoryCache } from "apollo-cache-inmemory";
+import { WriteCacheFragment1 } from "./graphql/WriteCacheFragment1";
+import { WriteCacheFragment2 } from "./graphql/WriteCacheFragment2";
+import { ReadCacheFragment } from "./graphql/ReadCacheFragment";
+
+const cache = new InMemoryCache({
+  dataIdFromObject: obj => obj.id,
+});
+
+// apollo client:codegen が完走する→schemaに対して不正なQueryではないことがわかる
+// apolloが生成した型を型パラメータとして利用するとdataの書式もチェックできる
+cache.writeFragment<WriteCacheFragment1>({
+  id: "Cat:yukari",
+  fragment: gql`
+    fragment WriteCacheFragment1 on Cat { id kind }
+  `,
+  data: {
+    __typename: "Cat",
+    id: "Cat:yukari",
+    kind: "norway jan forest cat & ragdoll",
+  },
+});
+cache.writeFragment<WriteCacheFragment2>({
+  id: "Cat:yukari",
+  fragment: gql`
+    fragment WriteCacheFragment2 on Cat { kind name }
+  `,
+  data: {
+    __typename: "Cat",
+    kind: null,
+    name: "yukari",
+  },
+});
+
+const result = cache.readFragment<ReadCacheFragment>({
+  id: "Cat:yukari",
+  fragment: gql`
+    fragment ReadCacheFragment on Cat {
+      id
+      kind
+      name
+    }
+  `,
+});
+// 結果は統合される
+// 書き込みフィールドが被った場合は後勝ち
+// {"id":"Cat:yukari","kind":null,"name":"yukari","__typename":"Cat"}
+console.log(JSON.stringify(result));
+#@end
+//}
+
+== ドハマリ回避のために
 
 皆さんにおすすめしたいのが、とりあえずハマる前にキャッシュ関係のソースコードを読め！ということです。
 apollo-cacheの実装@<fn>{apollo-cache-src}を読んでみて驚くのは、そのコード量の少なさです。
@@ -104,8 +329,8 @@ apollo-cache-inmemoryの実装@<fn>{apollo-cache-inmemory-src}も読むとタメ
 
 //footnote[apollo-cache-inmemory-src][@<href>{https://github.com/apollographql/apollo-client/tree/61639bcf44981a879f20c6196f74a7f7244bfda4/packages/apollo-cache-inmemory}]
 
-apollo-cache-inmemoryはoptimismパッケージ@<fn>{npm-optimism}に依存しているのですが、こいつが複雑&ドキュメント皆無というめんどくさ奴です。
-めんどくさいので読むのを途中で諦めたのですが、デバッガで追いかけている時にapolloのコードにいるのかoptimismのコードにいるのかが判断できる程度に様子を把握しておくと便利です。
+apollo-cache-inmemoryはoptimismパッケージ@<fn>{npm-optimism}に依存しているのですが、こいつが複雑&ドキュメント皆無というド面倒なやつです。
+あまりに面倒なので読むのを途中で諦めたのですが、デバッガでコードを追っている時に、apolloのコードを見ているのかoptimismのコードを見ているのか、判断できる程度に様子を見ておくと便利です。
 
 //footnote[npm-optimism][@<href>{https://www.npmjs.com/package/optimism}]
 
@@ -116,7 +341,7 @@ apollo-cache-inmemoryはoptimismパッケージ@<fn>{npm-optimism}に依存し�
 === cacheのcacheRedirectsを頼る
 
 clientのresolversより先に、cacheのcacheRedirectsで解決できないか検討する。
-発想として、クライアントローカルな処理を定義する時にclientのresolversに実装を追加した解決したくなります。
+発想として、クライアントローカルな処理を定義する時にclientのresolversに実装を追加して解決したくなります。
 しかし、clientとcacheはレイヤーが分かれていて、アプリケーション→client→cacheと処理が流れていくことを忘れてはいけません。
 cacheのレイヤーで無理なく実装できることはcacheのレイヤーで実装するのがよいでしょう。
 
@@ -127,8 +352,9 @@ cacheのレイヤーで無理なく実装できることはcacheのレイヤー�
 ローカルに状態を持つ時、可能な限り独自のtypeやらを定義しない。
 単純に@<code>{__typename}やら@<code>{id}やら、そのルールを定義しメンテするのがめんどくさいからです。
 そして、キャッシュの仕組み上@<code>{__typename}と@<code>{id}が定義できないような構造を導入すると痛い目を見ることになります。
-初期状態を定義するときに適当なデフォルト値をセットして回るのが面倒…というのもあるのですが、その苦労はこなしておくのが妥当です。
-現状、筆者はサーバ側もクライアント側も自分で書いているのでシステム全体の一貫性を考慮して設計するのは比較的カンタンなのです。
+フィールドがたくさんあると、初期状態に適当なデフォルト値をセットするのが面倒…というのもあるのですが、その苦労はこなしておくのが妥当です。
+
+現状、筆者はサーバ側もクライアント側も自分で書いているのでシステム全体の一貫性を考慮し、設計するのは比較的容易です。
 しかし、大規模化した時のことを考えると余計な複雑さは抑えておくべきでしょう。
 筆者も最初はQuery配下に色々な要素を散らかすのはちょっと…と思い、ローカルの状態を管理する型を作ろうかと思いました。
 しかし、すぐに@<code>{id}が定義できないので@<code>{cache.writeFragment}が使えず面倒になってしまいました。
@@ -140,10 +366,10 @@ cacheのレイヤーで無理なく実装できることはcacheのレイヤー�
 
 @<code>{@export}を利用して頑張ろうとしない。
 GraphQLはクエリであるため、関数を持ちません。
-これがかなり厳しい制約で、@<code>{ID}を@<code>{Boolean}に変換したりすることはできません。
-つまり、値の有無や特定の値の時に@<code>{@skip}や@<code>{@include}を使うことができません。
+これは真面目に考えるとなかなか厄介で、@<code>{ID}を@<code>{Boolean}に変換することができません。
+つまり、値の有無を見て@<code>{@skip}や@<code>{@include}の引数とすることができないのです。
 変数の値の変換をどこかのレイヤーでできると良いのでしょうが、筆者の知るかぎり難しいようです。
-代わりにたどり着いたのがcacheのcacheRedirectsを使う方法だった、というわけです。
+現状、これの代わりに使っているのがcacheのcacheRedirectsを使った方法です。
 
 #@# TODO もうちょっと実際のアプリケーションのコードやプラクティスの説明あってもよさそう currentHogeIDとcurrentHogeについてとか
 
