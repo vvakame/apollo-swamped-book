@@ -3,25 +3,25 @@
 本章のTL;DR
 
  * @<code>{cache.writeData}は極力使うな
- * IDを定めにくいデータをキャッシュに書くには@<code>{cache.writeQuery}を使え
  * IDが決められるデータをキャッシュに書くには@<code>{cache.writeFragment}を使え
+ * IDが決められないデータをキャッシュに書くには@<code>{cache.writeQuery}を使え
  * Apolloでドハマリしそうになったらコード読んでデバッガ使って処理を追いかけろ
 
-== キャッシュ & ローカル状態管理
+== ローカル状態管理とキャッシュ
 
-キャッシュというかローカルの状態管理をApolloでしようとした話なんですが、これらは切り離せない話題であります。
+ローカルの状態管理をApolloでしようとした話です。
 
-apollo-client 2.5以前ではapollo-link-state@<fn>{apollo-link-state}というパッケージとして独立していたようですが2.5からは本体に取り込まれたらしいです。
-最近参入勢なのでその辺はあまり知らない…！
+apollo-client 2.5以前ではapollo-link-state@<fn>{apollo-link-state}という独立したパッケージだったようですが2.5からは本体に取り込まれたらしいです。
+筆者は最近参入勢なのでその辺はあまり知らない…！
 
-本章で@<code>{cache}という用語が出てきた時は、@<code>{apoll-cache}@<fn>{npm-apollo-cache}ないし@<code>{apollo-cache-inmemory}@<fn>{npm-apollo-cache-inmemory}のインスタンスのことを指します。
+本章で@<code>{cache}という用語が出てきた時は、@<code>{apoll-cache}@<fn>{npm-apollo-cache}パッケージないし@<code>{apollo-cache-inmemory}@<fn>{npm-apollo-cache-inmemory}パッケージのインスタンスのことを指します。
 もっぱら@<code>{new InMemoryCache()}で得られるものですね。
 
 //footnote[npm-apollo-cache][@<href>{https://www.npmjs.com/package/apollo-cache}]
 //footnote[npm-apollo-cache-inmemory][@<href>{https://www.npmjs.com/package/apollo-cache-inmemory}]
 
 ローカルの状態管理をApolloでやること自体については公式のドキュメント@<fn>{apollo-local-state-1}@<fn>{apollo-local-state-2}を参照してください。
-これらドキュメント中で@<code>{cache.writeData}を使う例が出てきますが、後述する理由により罠だと考えていますのでそこだけ注意してください。
+これらドキュメント中で@<code>{cache.writeData}を使う例が出てきますが、後述する理由により罠だと確信していますのでそこだけ注意してください。
 
 //footnote[apollo-link-state][@<href>{https://www.npmjs.com/package/apollo-link-state}]
 //footnote[apollo-local-state-1][@<href>{https://www.apollographql.com/docs/tutorial/local-state.html}]
@@ -37,7 +37,7 @@ QueryやらMutationやらでローカルの状態変更を行うのは、それ�
 
 //footnote[apollo-caching][@<href>{https://www.apollographql.com/docs/react/advanced/caching.html}]
 
-== cache.writeData, Query, Fragment
+== cache.writeData, Fragment, Query
 
 ハマりの説明に入りましょう。
 筆者が作っていた（いる）アプリは、任意のデータベースの中身を引っ張ってきてJSONとして取得できる動作が含まれています。
@@ -68,21 +68,28 @@ type Cat {
 //footnote[apollo-custom-scalar-type][@<href>{https://www.apollographql.com/docs/graphql-tools/scalars.html}]
 
 更に調べていくとクライアント側のcustom scalar typeサポートはまだ存在していません@<fn>{apollo-client-side-custrom-scalar}。
-サポートされていない、というのは値の形式変換が暗黙理にできないというだけで、実用上少し苦労する程度で済みます。
+サポートされていない、というのは値の形式変換が暗黙理にできないというだけで、実用上少し苦労するだけで、一応普通に使えます。
 
 //footnote[apollo-client-side-custrom-scalar][@<href>{https://github.com/apollographql/apollo-feature-requests/issues/2}]
 
 問題になるのは、キャッシュに対してこの形式のデータを書こうとした時です。
-ありがちな理由として、画面の左側にリストがあって、そこからアイテムを選択し、右側で編集したいとします。
-この操作を画面上で実現するためには、選んだアイテムの情報をどこかに保持しておかなければなりません。
+通常、GraphQLで得られるデータはツリー構造で、scalarはリーフ部分にあたります。
+しかし、JSONをscalarとした場合、リーフ＝scalarの構造が崩れてしまいます。
+これが間者として我々の脇腹を突き刺してきます。
+
+//comment{
+そんなデータを明示的にキャッシュに書くことなんてあるか？と思われるかもしれませんが、比較的容易に発生します。
+筆者のユースケースとして、画面の左側にリストがあって、そこからアイテムを選択し、右側で編集したいとします。
+この操作を画面上で実現するためには、選んだアイテムの情報をどこかに保持しておかなければ編集できません。
 画面初期化時に、適当なデータをキャッシュに書き込む場合もあるでしょう。
+//}
 
 書き込み処理として、@<code>{cache.writeData}はスキーマレスなデータ@<strong>{しか}渡すことができません。
 また、cacheもclientも実行時にはスキーマに関する情報を保持していません（かなり盲点ですね）。
 
 さて、キャッシュのデータは必ずスキーマとセットで扱われます。
 @<code>{cache.writeData}では、このギャップを埋めるために@<code>{queryFromPojo}というユーティリティ関数を使って、データからスキーマをひねり出して使います。
-しかしながら、渡したデータのどの部分が@<code>{scalar JSON}なのかがわからないため、JSONの中まで見に行って@<code>{__typename}とか@<code>{id}がなくて大騒ぎになります（@<list>{code/cache-example/src/writeData.ts}）。
+しかしながら、渡したデータのどの部分が@<code>{scalar JSON}なのかがわからないため、JSONの中まで見に行って@<code>{__typename}とか@<code>{id}が見つからない！と騒ぎになります（@<list>{code/cache-example/src/writeData.ts}）。
 
 //list[code/cache-example/src/writeData.ts][writeDataは危険なのです]{
 #@mapfile(../code/cache-example/src/writeData.ts)
@@ -137,19 +144,19 @@ Object.keys(cache.extract()).forEach(cacheKey => console.log(cacheKey));
 人類がこんなことで苦しまなければいけないのは馬鹿げていますね。
 
 この挙動はドキュメントには明記されていないように見えますし、ひたすらデバッガ片手に処理を追いかけていかないと原因がわかりませんでした。
-最終的に、設計思想と自分の実装にミスマッチがありうまく行っていないことがわかるまで非常に苦労しました。
+最終的に、設計思想と自分の考え方にミスマッチがありうまく行っていないことがわかるまで非常に苦労しました。
 壊れたデータを書いてしまった場合でも警告などが得られないパターンもあり、それなのに一見関係ないQueryで結果がおかしくなったりして本当に罠みが高いです。
 
 @<code>{cache.writeData}は罠！GraphQLでコードを書くというのにスキーマレスになりうるパーツを使うのは罪！
 そのことを強く胸に刻みこんで生きていきましょう。
-Issueも書いてみた@<fn>{apollo-issue-4554}のですが、反応まるでないし@<code>{cache.writeQuery}か@<code>{cache.writeFragment}使え、で終わりそうではあります。
+Issueも書いてみた@<fn>{apollo-issue-4554}のですが、反応まるでないし@<code>{cache.writeFragment}か@<code>{cache.writeQuery}使え、で終わりそうではあります。
 
 //footnote[apollo-issue-4554][@<href>{https://github.com/apollographql/apollo-client/issues/4554} まぁ筋の良い話ではなさそう]
 
 どういう方向性で実装するのがよかったかを解説します。
 @<code>{cache.writeFragment}か@<code>{cache.writeQuery}を常に使うのが正しいです。
 FragmentかQueryを与えると、書き込みたいデータに対してスキーマとして機能し、それに沿ってデータ形式が検査されます。
-つまり、FragmentやQueryをバリデータとして与えるという意味合いになります。
+つまり、FragmentやQueryをバリデータとして使います。
 これらは@<code>{apollo client:codegen}を使うことでデータがスキーマに対して正しい形式であることを間接的に、そして静的にチェックできます。
 
 2つの使い分け方として、IDが判明している単一のデータの書き込みには@<code>{cache.writeFragment}を使い、そうでなければ@<code>{cache.writeQuery}を使うことになります。
@@ -256,7 +263,7 @@ Object.keys(cache.extract()).forEach(cacheKey => console.log(cacheKey));
 #@end
 //}
 
-ここでのFragmentやQueryは、clientを使って何かをリクエストする時のFragmentやQueryと同一のものではありません。
+ここでのFragmentやQueryは何かをリクエストする時のものと同一ではありません。
 キャッシュ書き込みのための固有のパーツを用意してもいいですし、画面で使っているものを流用しても構いません。
 キャッシュのデータ実体は常に1つであり、そこに対する書き込み、読み込みの型としてFragmentやQueryを流用しています。
 FragmentやQuery毎にキャッシュが独立しているわけではないのです（@<list>{code/cache-example/src/queryAsASchema.ts}）。
@@ -320,28 +327,30 @@ console.log(JSON.stringify(result));
 皆さんにおすすめしたいのが、とりあえずハマる前にキャッシュ関係のソースコードを読め！ということです。
 apollo-cacheの実装@<fn>{apollo-cache-src}を読んでみて驚くのは、そのコード量の少なさです。
 めっちゃサクサク読める！
-前述の@<code>{writeData}の実装や、@<code>{writeQuery}、@<code>{writeFragment}がどういう挙動をしようとしているのか把握しておくとドハマリが避けられます。
+前述の@<code>{writeData}の実装や、@<code>{writeFragment}、@<code>{writeQuery}がどういう挙動をしようとしているのか把握しておくとドハマリが避けられます。
 
 //footnote[apollo-cache-src][@<href>{https://github.com/apollographql/apollo-client/tree/61639bcf44981a879f20c6196f74a7f7244bfda4/packages/apollo-cache}]
 
 apollo-cache-inmemoryの実装@<fn>{apollo-cache-inmemory-src}も読むとタメになりますが、優先度は低いでしょう。
-ドキュメント類の網羅度が貧弱なので謎メソッドの実装を読んで振る舞いを把握する必要があります。
+ドキュメント類の網羅度が貧弱なので謎メソッドの実装を読んで振る舞いを把握する必要がすぐに迫られるかとは思いますが…。
 
 //footnote[apollo-cache-inmemory-src][@<href>{https://github.com/apollographql/apollo-client/tree/61639bcf44981a879f20c6196f74a7f7244bfda4/packages/apollo-cache-inmemory}]
 
 apollo-cache-inmemoryはoptimismパッケージ@<fn>{npm-optimism}に依存しているのですが、こいつが複雑&ドキュメント皆無というド面倒なやつです。
-あまりに面倒なので読むのを途中で諦めたのですが、デバッガでコードを追っている時に、apolloのコードを見ているのかoptimismのコードを見ているのか、判断できる程度に様子を見ておくと便利です。
+あまりに面倒なので読むのを途中で諦めたのですが、デバッガでコードを追っている時にapolloのコードを見ているのかoptimismのコードを見ているのか、判断できる程度には覗いておくと便利です。
 
 //footnote[npm-optimism][@<href>{https://www.npmjs.com/package/optimism}]
 
 == その他のキャッシュ関連プラクティス
 
 試行錯誤する過程で、コレ以外にもいくつかプラクティスを発見したので紹介していきます。
+若干負債化しそうな匂いもすでに感じていて、将来的には考えを変えるかもしれません。
+皆さんも実践する時は自分の脳で是非を検討してみてください。
 
 === cacheのcacheRedirectsを頼る
 
 clientのresolversより先に、cacheのcacheRedirectsで解決できないか検討する。
-発想として、クライアントローカルな処理を定義する時にclientのresolversに実装を追加して解決したくなります。
+クライアントローカルな処理を定義したい時、clientのresolversに実装を追加して解決したくなります。
 しかし、clientとcacheはレイヤーが分かれていて、アプリケーション→client→cacheと処理が流れていくことを忘れてはいけません。
 cacheのレイヤーで無理なく実装できることはcacheのレイヤーで実装するのがよいでしょう。
 

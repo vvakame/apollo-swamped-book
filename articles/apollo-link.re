@@ -51,8 +51,8 @@ export declare class ApolloLink {
 
 == Apollo Linkでサーバ側実装なしにコードを組む
 
-まずは肩慣らしに、デモ作成の時に便利なネットワークアクセス無しでクエリを投げて結果を得られるようなものを作ってみます。
-発想としては、@<chapref>{utilities}で紹介した関数を組み合わせ、schema.jsonからschemaを作成し、それにmockのresolverを仕込み、それに対してクエリを投げます。
+まずは肩慣らしに、デモ作成の時に便利なネットワークアクセス無しでクエリを処理するApollo Linkを作ってみます。
+発想としては、@<chapref>{utilities}で紹介した関数を組み合わせ、schema.jsonからschemaを作成し、それにmockのresolverを仕込み、そいつにクエリを処理させます。
 実装は@<list>{link-example/src/index.ts}のようになりました。
 
 //list[link-example/src/index.ts][虚空からレスポンスをひねり出す]{
@@ -111,14 +111,13 @@ ApolloLinkでObservableを作成し、返す。
 便利ですね。
 
 この例を見てわかるのは、リクエストはOperationとして各linkに到達し、linkは自分がそれを処理できるのであれば何らかの方法で結果を作成して返せればよい、ということです。
-GraphQLではトランスポートレイヤーの規定などは使用上何も存在しないため、様々なプロトコルにリクエストを変換して乗せることができるのです。
+GraphQLではトランスポートレイヤーの規定などは使用上何も存在しないため、様々なプロトコルにリクエストを乗せることができるのです。
 
 == Subscriptionを何かしらのPushとQueryに変換する
 
-本題です。
 筆者が愛するGoogle AppEngineはWebSocketなどのリアルタイムなPushを行う手段がありません。
 WebSocketがなかったら折角GraphQLにはSubscriptionという面白い仕組みがありキャッシュによる画面の自動更新とかもあるというのにそれが生かされないだろ…！？と思っていました。
-しかし、Apollo Linkの仕組みを使えば、Subscriptionのリクエストを何らかのPushサービス+Queryによるデータの取得に変換可能できそうです。
+しかし、Apollo Linkの仕組みを使えば、Subscriptionのリクエストを何らかのPushサービス+Queryによるデータの取得に変換できそうです。
 
 具体的に、Firestoreなどのクライアント側からsubscribe可能なマネージドサービスetcを準備します。
 サーバ側からは、そのPushサービスを介してクライアント側にIDと変更の種類（Created/Updated/Deleted）を送ります。
@@ -129,6 +128,7 @@ WebSocketがなかったら折角GraphQLにはSubscriptionという面白い仕�
 なかなか頭が悪そうなので実現させるためにはかなりの無茶と馬力が必要そうではあります。
 
 ざっくりした実装を@<href>{https://github.com/vvakame/til/pull/17}に置いておいたので興味があったら見てみてください。
+本書執筆時点ではアプリケーションへの組み込みとテストが全然できていないのが惜しいところです。
 
 //comment{
  * https://github.com/apollographql/graphql-subscriptions

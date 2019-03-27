@@ -1,13 +1,13 @@
 = クライアント側でApolloやっていき
 
-最近は技術書典Webで使おうとしたり、あと社内ツールをフルスクラッチする機会を手に入れたので素振りがてら色々やってみています。
+最近は技術書典Webで使おうとしたり、社内ツールをフルスクラッチする機会を使って素振りをしています。
 Apolloは大枠としてはわかりやすく、第一歩で躓くことは少ないように思います。
 この章ではApolloがもたらす恩恵について書いていきます。
 
-== 型があるって素晴らしいよな
+== 型があるって素晴らしい
 
 なんといってもGraphQLは型を持っていることが最重要ポイントです。
-型があるということは、静的にクエリがvalidか否か判定することができますし、クエリで得られるデータに合致する"完全な"型を得ることができます。
+型があるなら、静的にクエリが正しいか否か判定することができますし、クエリのレスポンスデータの"完全な"型を得ることもできます。
 
 GitHubが提供するv4 API@<fn>{github-v4}はGraphQLで提供されていますので、これを例として見せます。
 アプリを組む時の大まかな流れは次のようになります。
@@ -24,9 +24,10 @@ GitHubはAPIを叩く時にAccessTokenを必要としますので、Personal Acc
 //footnote[github-pat][@<href>{https://github.com/settings/tokens}]
 
 //cmd{
-$ npx apollo schema:download --endpoint https://api.github.com/graphql --header "Authorization: Bearer ${GITHUB_TOKEN}"
-  ✔ Loading Apollo Project
-  ✔ Saving schema to schema.json
+$ npx apollo schema:download --endpoint https://api.github.com/graphql \
+    --header "Authorization: Bearer ${GITHUB_TOKEN}"
+  ✓ Loading Apollo Project
+  ✓ Saving schema to schema.json
 //}
 
 これでGitHubのGraphQLの型情報が詰まったschema.jsonが作成されました。
@@ -40,7 +41,7 @@ import gql from "graphql-tag";
 const viewerQuery = gql`
   query ViewerQuery {
     viewer {
-      # もちろんこれ以外にも色々ある
+      # 必要な分だけ書けばいい！
       id
       bio
       here:location
@@ -51,18 +52,20 @@ const viewerQuery = gql`
 //}
 
 クエリを@<code>{graphql-tag}に文字列テンプレートリテラルとして渡してやるだけです。
-Fragmentの埋込なども@<code>{${otherFragmentDefinition\}}的に行うことができます。
+他のFragmentの参照も@<code>{${otherFragmentDefinition\}}という感じに行うことができます。
 
-apolloでは、クエリやフラグメントにはしっかり名前をつけなければいけません。
-この習慣はサーバ側でトレースを分析する時にも便利なので、なんらかの命名規則を設けてしっかり管理するのをおすすめします。
+apolloでは、QueryやFragmentにはしっかり名前をつけなければいけません。
+この習慣はサーバ側でトレースを分析する時にも便利です。
+なんらかの命名規則を設け、しっかり管理するのをおすすめします。
 
-これをapollo先生に解析してもらい、型定義情報を出力してもらいます。
+ここのソースコードをapollo先生に解析してもらい、型定義情報を出力してもらいます。
 
 //cmd{
-$ npx apollo client:codegen --localSchemaFile=./schema.json --addTypename --target=typescript --outputFlat src/graphql
+$ npx apollo client:codegen --localSchemaFile=./schema.json \
+    --addTypename --target=typescript --outputFlat src/graphql
 
-  ✔ Loading Apollo Project
-  ✔ Generating query files with 'typescript' target - wrote 2 files
+  ✓ Loading Apollo Project
+  ✓ Generating query files with 'typescript' target - wrote 2 files
 //}
 
 得られた型定義ファイルを見てみます（@<list>{code/github-query/src/graphql/ViewerQuery.ts}）。
@@ -101,18 +104,20 @@ export interface ViewerQuery {
 
 うーん、素晴らしい！
 型定義にはクエリで要求したフィールドのみが出力されています。
-また、nullableかどうかもキチンと処理され、必ず値があるものについてはその型が、そうではないものはnullの可能性ありと型に表れています。
+また、nullableかどうかもキチンと処理され、nullableかどうかも型として表現されています。
 
-このように、GraphQL+apolloではアプリケーション的に関心がある型のみを相手にできるようになっているのです。
+このように、GraphQL+apolloではアプリケーション的に関心がある型を厳密に扱えるようになっています。
 ワンダフル！
-Open API（Swagger）も似たようなことができますが、アプリケーションの需要とサーバ側が出力する型が厳密には一致しないのがちょっと不便です。
+Open API（Swagger）も似たようなことができます。
+しかし、アプリケーション側の関心とサーバ側が提供する型が厳密に一致することがほぼないのが不便です。
 
 ===[column] Apolloで扱うスキーマあれこれ
 
 GraphQLの型情報を持ったファイル、と言った時、該当するものが複数あります。
 
 1つ目が主に拡張子.graphqlで表されるファイルで、中身は人間が読み書きするためのスキーマ定義です（@<list>{graphql-ext-example}）。
-GraphQL Schema Definition Language、略してGraphQL SDLと呼ばれている場合もあるようです。
+@<kw>{GraphQL SDL,GraphQL Schema Definition Language}と呼ばれる場合もあります。
+主な使われ方として、.graphqlは人間が読み書きし、サーバ側実装のソースにします。
 
 //list[graphql-ext-example][*.graphqlの例]{
 type Query {
@@ -122,20 +127,18 @@ type Query {
 //}
 
 2つ目が、schema.jsonなどで表される型情報が集まったJSONファイルです。
+このJSONファイルはサーバ側のGraphQLのエンドポイントを叩き、Introspectionの機能を使って型情報を取得します。
+多くはGraphQL SDL→サーバ→schema.jsonというフローです。
+
+*.graphqlからサーバを経由することなしにschema.jsonにする方法もあります。
+筆者も駆け出しの頃にやり方を探したけどなかなか見つからず苦労したので、今使っているスクリプトをgistにあげておきます。
+
+@<href>{https://gist.github.com/vvakame/0d92c9101e6db6fa6f5f2ab714bca00e}
 
 型定義や型情報と言った時、この2つのうちどっちを指すのかは文脈やツールに依存します。
 気合でわかってください。
 
-主な使われ方として、.graphqlは人間が読み書きし、サーバ側実装のソースにします。
-JSONファイルはサーバ側のIntrospection APIを叩き、GraphQLの実装から型情報を持ってきます。
-つまり、*.graphql→サーバ→schema.jsonというフローです。
-
-*.graphqlからサーバを経由することなしにschema.jsonにする方法もあります。
-筆者も駆け出しの頃に探したけどなかなか見つからず苦労したので今使っているスクリプトのgistにあげておきます。
-
-@<href>{https://gist.github.com/vvakame/0d92c9101e6db6fa6f5f2ab714bca00e}
-
-3つ目が、1つめのスキーマ定義をパースした結果のASTです。
+3つ目が、GraphQL SDLをパースした結果のASTです。
 基本的にお目にかかることは少ないでしょう。
 
 ===[/column]
@@ -143,9 +146,9 @@ JSONファイルはサーバ側のIntrospection APIを叩き、GraphQLの実装�
 == Apolloという魔法
 
 GraphQLのクエリを書くと型定義が生成される！というのはかなり魔法っぽいです。
-実装しろと言われたら、まぁ普通にAST見て特定のパターン見つけたらクエリと判断してパースして…と想像することはできます。
-魔法の力は一体どこまで我々の想像の上をゆくのか？
-強いところも弱いところもあります。
+自分で実装しろと言われたら、アプリケーションコードのASTを見て、特定のパターンをクエリとして処理して…という流れが想像できます。
+ある種魔法的な実装が必要になるわけですが、このApolloの提供する魔法の力は一体どんなものなのでしょうか？
+我々の想像よりも強いところも弱いところもあります。
 
 まずは筆者がすごい！と思っていることをリストアップしてみます。
 
@@ -153,10 +156,11 @@ GraphQLのクエリを書くと型定義が生成される！というのはか�
  * ローカルの状態管理もできる（Redux不要説）
  * リモートとローカルへのクエリを混ぜて書ける
  ** 自動的に分解・統合を裏でやってくれる
- * キャッシュを賢く行ってくれる
- ** データの更新がかかると関連箇所に自動反映される
+ * データのキャッシュを賢く管理してくれる
+ ** データの更新が検知できたら、関連箇所に自動的に反映される
 
 素晴らしい！
+
 一方、不満がある点は次の通り。
 
  * リストの継ぎ足し（fetchMore）が思ったより自動じゃない

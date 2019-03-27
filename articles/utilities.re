@@ -1,8 +1,8 @@
 = graphql関連の素晴らしきユーティリティたち
 
-GraphQLはかなり潤沢なユーティリティがあり、これらを自由に活用することができます。
+GraphQLはかなり潤沢なユーティリティがあり、これらを活用できると遊びの幅が広がります。
 ここでは、graphql@<fn>{npm-graphql}とgraphql-tools@<fn>{npm-graphql-tools}について便利そうな機能をピックアップして紹介します。
-graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ読めるしまぁいいか！
+graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ読み切れるし割愛でいいかな！
 
 //footnote[npm-graphql][@<href>{https://npmjs.com/package/graphql}]
 //footnote[npm-graphql-tools][@<href>{https://npmjs.com/package/graphql-tools}]
@@ -12,20 +12,20 @@ graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ�
 
 まずはgraphqlパッケージから紹介していきます。
 公式ドキュメント@<fn>{docs-graphql}を読むのがおすすめです。
-本章のサンプルコードも合わせて読むとよりわかりやすいでしょう。
+不足しがちなサンプルコードを本章で摂取できます。
 
 //footnote[docs-graphql][@<href>{https://graphql.github.io/graphql-js/graphql/}]
 
 AST関連やスキーマ関連の便利関数が揃っていて、メタな処理をしたい時に役立ちます。
 
-特に断りのない場合、未知の関数や型が出てきた場合、graphqlパッケージからimportしてきたものとします。
-たとえば、GraphQLSchemaとbuildSchemaが出てきた場合、@<code>{import { GraphQLSchema, buildSchema \} from "graphql";}というコードがあるものと考えてください。
-GraphQLSchema型の値であるschemaは頻出のため、これについてはbuildSchema関数などを使って作成しているものとします。
+特に断りのない場合は未知の関数や型が出てきた場合、graphqlパッケージからimportしてきたものとします。
+たとえば、@<code>{GraphQLSchema}と@<code>{buildSchema}が出てきた場合、@<code>{import { GraphQLSchema, buildSchema \} from "graphql";}というコードがあるものと考えてください。
+@<code>{schema}は頻出のため、同名の変数が出てきた場合は@<code>{buildSchema}関数で作られた@<code>{GraphQLSchema}型とします。
 
-=== buildSchema
+=== buildSchema関数
 
 まずはbuildSchema関数です（@<list>{buildSchema}）。
-GraphQL Schema Definition LanguageからGraphQLSchemaに変換できます。
+GraphQL SDLからGraphQLSchemaに変換できます。
 
 //list[buildSchema][buildSchema関数]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,buildSchema)
@@ -39,10 +39,10 @@ const schema: GraphQLSchema = buildSchema(schemaStr);
 #@end
 //}
 
-=== printSchema
+=== printSchema関数
 
 これと対になるのがprintSchema関数です（@<list>{printSchema}）。
-GraphQLSchemaからGraphQL Schema Definition Languageに変換できます。
+GraphQLSchemaからGraphQL SDLに変換できます。
 
 //list[printSchema][printSchema関数]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,printSchema)
@@ -57,11 +57,11 @@ let schemaStr2: string = printSchema(schema);
 #@end
 //}
 
-=== graphql
+=== graphql関数
 
 schemaに対してリクエストを作成し実行します（@<list>{graphql}）。
-クライアント側だけでざっくりクエリを投げられるため使い勝手がよいです。
-sync版であるgraphqlSyncもありますが、GraphQL execution failed to complete synchronously.とか言って怒られることがあるため、使えないと考えておいたほうが無難でしょう。
+プロセス内で手軽にQueryなどを投げられるため使い勝手がよいです。
+sync版であるgraphqlSyncもありますが、@<code>{GraphQL execution failed to complete synchronously.}とか言って怒られることがあるため、使えないと考えておいたほうが無難でしょう。
 
 //list[graphql][graphql関数]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,graphql)
@@ -70,9 +70,9 @@ const result: ExecutionResult<IntrospectionQuery> =
 #@end
 //}
 
-=== getIntrospectionQuery
+=== getIntrospectionQuery関数
 
-IntrospectionQueryに使う文字列を取得できるgetIntrospectionQuery関数です（@<list>{getIntrospectionQuery}）。
+Introspection Queryに使う文字列を取得できるgetIntrospectionQuery関数です（@<list>{getIntrospectionQuery}）。
 schema.jsonを生成する時に使われているQueryですね。
 前述のgraphql関数と組み合わせてschema.jsonをひねり出すのにも使えます。
 
@@ -85,19 +85,20 @@ const schemaJSONlike = result.data;
 #@end
 //}
 
-=== buildClientSchema
+=== buildClientSchema関数
 
 schema.jsonからschemaを組み立てられるbuildClientSchema関数です（@<list>{buildClientSchema}）。
 クライアント側でschemaがほしい場合、GraphQL SDLは持っていない場合が多いと思いますのでこちらを使うのが便利でしょう。
 
 //list[buildClientSchema][buildClientSchema関数]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,buildClientSchema)
-const inspectionResult: ExecutionResult<IntrospectionQuery> = await graphql(schema, getIntrospectionQuery());
+const inspectionResult: ExecutionResult<IntrospectionQuery> =
+  await graphql(schema, getIntrospectionQuery());
 const clientSchema: GraphQLSchema = buildClientSchema(inspectionResult.data!);
 #@end
 //}
 
-=== parse
+=== parse関数
 
 渡した文字列をパースしASTにして返します（@<list>{parse}）。
 必要になる場面はbuildSchemaなどに比べると少ないかもしれないですね。
@@ -117,7 +118,9 @@ let schemaAST: DocumentNode = parse(`
 #@end
 //}
 
-=== print
+ちなみに、grapgl-tagが返す値はparse関数と同じくDocumentNodeです。
+
+=== print関数
 
 parseとは逆に、ASTを文字列に変換します（@<list>{print}）。
 必要に応じてprintSchemaとprintを使い分けるとよいでしょう。
@@ -133,7 +136,7 @@ let queryStr: string = print(queryAST);
 #@end
 //}
 
-=== buildASTSchema
+=== buildASTSchema関数
 
 （スキーマの）ASTからSchemaに変換します。（@<list>{buildASTSchema}）。
 これも使うタイミングは少なさそうです。
@@ -149,7 +152,7 @@ const schema = buildASTSchema(query);
 #@end
 //}
 
-=== visitとTypeInfo
+=== visit関数とTypeInfoクラス
 
 ASTを深さ優先探索でトラバースします（@<list>{visit}）。
 visitorの書き方はかなり色々あり、Nodeの差し替えなども可能なので、詳しくは公式ドキュメント@<fn>{docs-visit}を読んでみてください。
@@ -221,7 +224,7 @@ visit(query, visitWithTypeInfo(typeInfo, {
 特に断りのない場合、未知の関数や型が出てきた場合、graphql-toolsパッケージからimportしてきたものとします。
 graphql関数についてはgraphqlパッケージからimportしてきたものとします。
 
-=== makeExecutableSchema
+=== makeExecutableSchema関数
 
 Resolverなど、実際に動作させるために必要な要素を組み込んだSchemaを作成します（@<list>{makeExecutableSchema}）。
 クライアント側の実装を行う時にはあまり使わない…かと思いきや、Apolloのドキュメントを参考にコードを書いていると案外出会います。
@@ -248,7 +251,7 @@ const resolvers = {
 #@end
 //}
 
-=== addMockFunctionsToSchema
+=== addMockFunctionsToSchema関数
 
 schemaに対してmockのresolverをセットしてくれます（@<list>{addMockFunctionsToSchema}）。
 テストを書く時や、とりあえず動く何かがほしい時に重宝します。

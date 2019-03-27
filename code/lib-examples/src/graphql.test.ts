@@ -116,7 +116,8 @@ describe("graphql", () => {
 		`;
 		const schema: GraphQLSchema = buildSchema(schemaStr);
 		// #@@range_begin(buildClientSchema)
-		const inspectionResult: ExecutionResult<IntrospectionQuery> = await graphql(schema, getIntrospectionQuery());
+		const inspectionResult: ExecutionResult<IntrospectionQuery> =
+			await graphql(schema, getIntrospectionQuery());
 		const clientSchema: GraphQLSchema = buildClientSchema(inspectionResult.data!);
 		// #@@range_end(buildClientSchema)
 		expect(clientSchema).not.toBeNull();
