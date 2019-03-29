@@ -1,5 +1,8 @@
 .DS_Store
 
+articles/images/cover/
+distribute/
+
 node_modules/
 Gemfile.lock
 *.pdf
