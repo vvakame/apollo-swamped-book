@@ -4,6 +4,7 @@
 Apolloは大枠としてはわかりやすく、第一歩で躓くことは少ないように思います。
 この章ではApolloがもたらす恩恵について書いていきます。
 
+
 == 型があるって素晴らしい
 
 なんといってもGraphQLは型を持っていることが最重要ポイントです。
@@ -55,6 +56,8 @@ const viewerQuery = gql`
 他のFragmentの参照も@<code>{${otherFragmentDefinition\}}という感じに行うことができます。
 
 apolloでは、QueryやFragmentにはしっかり名前をつけなければいけません。
+#@# gfx: 名前つけなくても実行はできる気がするぞ？？とはいえ名前をつるのがベストプラクティスなのは確かです。あと、fagment nameはアプリ全体でユニークでないといけないです（graphql-tagの仕様な気もするが、graphql-tagもapolloの一部なので）
+#@# cf. https://github.com/apollographql/graphql-tag/blob/master/src/index.js#L45-L51
 この習慣はサーバ側でトレースを分析する時にも便利です。
 なんらかの命名規則を設け、しっかり管理するのをおすすめします。
 
@@ -107,6 +110,7 @@ export interface ViewerQuery {
 また、nullableかどうかもキチンと処理され、nullableかどうかも型として表現されています。
 
 このように、GraphQL+apolloではアプリケーション的に関心がある型を厳密に扱えるようになっています。
+#@# gfx: s/GraphQL+apollo/GraphQL+Apollo+TypeScript/
 ワンダフル！
 Open API（Swagger）も似たようなことができます。
 しかし、アプリケーション側の関心とサーバ側が提供する型が厳密に一致することがほぼないのが不便です。
