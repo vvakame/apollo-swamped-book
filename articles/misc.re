@@ -126,6 +126,8 @@ React.memoを使えばいけるのでは！？と思ったのですがまだま�
 GraphQLエラーハンドリングデザパタ集みたいなのがあると大変うれしいですね…。
 @<href>{https://hnpwa.com/}とかに参考になるものがないかと思ったのですが、意外にGraphQLで実装されたものが存在しないようです。
 
+#@# tomo : https://github.com/apollographql/apollo-link/tree/master/packages/apollo-link-error ミドルウェアでGenericなエラーをハンドリングしてView側に渡す手もありますねー
+
 === 雑に大きなデータをstateに突っ込んだら辛かった
 
 Reactでかなり大きなデータをstateに突っ込み、ユーザに編集させていました。
