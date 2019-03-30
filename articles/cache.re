@@ -355,6 +355,8 @@ clientのresolversより先に、cacheのcacheRedirectsで解決できないか�
 しかし、clientとcacheはレイヤーが分かれていて、アプリケーション→client→cacheと処理が流れていくことを忘れてはいけません。
 cacheのレイヤーで無理なく実装できることはcacheのレイヤーで実装するのがよいでしょう。
 
+#@# tomo: cacheRedirectsとresolverの役割は名前の通り違うので、cacheを書き換えたりする場合にcacheRedirectsを推奨してしまうのは大丈夫かな...?と思いました。CacheRedirectsはとあるクエリを投げられた場合にそのキャッシュがすでにある場合にredirectの向き先を教えてあげる仕組みでresolverはローカルステートの更新を行うためとDocumentにも書いてある(https://www.apollographql.com/docs/react/essentials/local-state)ので、そこはresolverでローカルステート更新の処理の責務を書くべきなのかなと思います。
+
 #@# TODO この辺もうちょっと具体的な理由があった気がするけど忘れた
 
 === クライアント側独自の型をなるべく作らない
