@@ -122,9 +122,10 @@ let schemaAST: DocumentNode = parse(`
 #@end
 //}
 
-ちなみに、grapgl-tagが返す値はparse関数と同じくDocumentNodeです。
-#@# gfx: 実体は DocumentNode だけど .d.ts での宣言はanyになってるんでな…
+ちなみに、grapgl-tagが返す値の実体はparse関数と同じくDocumentNodeです。
+#@# OK gfx: 実体は DocumentNode だけど .d.ts での宣言はanyになってるんでな…
 #@# https://github.com/apollographql/graphql-tag/pull/141 一度は型が与えられたけど問題があってrevertされたっぽい
+#@# vv: コード読んでanyになってるけど実際DocumentNodeだなーというとこまでは追ってたんだけど過去にチャレンジされたことがあったのか… てっきり怠慢かと思(ｒｙ
 
 === print関数
 
