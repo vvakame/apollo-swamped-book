@@ -118,6 +118,9 @@ GraphQLSchema {
   "_subscriptionType": null,
   "_typeMap": Object {
     "Boolean": "Boolean",
+    "Float": "Float",
+    "ID": "ID",
+    "Int": "Int",
     "Query": "Query",
     "String": "String",
     "__Directive": "__Directive",
@@ -144,10 +147,10 @@ GraphQLSchema {
     "@deprecated",
   ],
   "_implementations": Object {},
-  "_mutationType": null,
+  "_mutationType": undefined,
   "_possibleTypeMap": Object {},
   "_queryType": "Query",
-  "_subscriptionType": null,
+  "_subscriptionType": undefined,
   "_typeMap": Object {
     "Boolean": "Boolean",
     "Query": "Query",

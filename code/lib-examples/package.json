@@ -11,12 +11,12 @@
   "devDependencies": {
     "@babel/preset-env": "^7.4.2",
     "@babel/preset-typescript": "^7.3.3",
-    "@types/graphql": "^14.0.7",
+    "@types/graphql": "^14.2.0",
     "@types/jest": "^24.0.11",
-    "graphql": "^14.1.1",
+    "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
     "graphql-tools": "^4.0.4",
     "jest": "^24.5.0",
-    "typescript": "^3.3.4000"
+    "typescript": "^3.4.1"
   }
 }
