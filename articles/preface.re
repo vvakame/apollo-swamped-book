@@ -2,18 +2,23 @@
 
 技術書典5ではGraphQLサーバをGo言語で作るというネタをやりました。
 今回は、所変わってクライアント側を普通にApollo+TypeScript+Reactでクライアント側をやっていきつつある話をします。
+GraphQLの概要についてはそろそろ割愛していいと思いますので割愛します。
+Google先生で調べるか、私が技術書典5の時に書いた@<href>{https://vvakame.booth.pm/items/1055228}を参照してください。
 
 本書の内容は次のバージョンを前提に解説しています@<fn>{monorepo-versioning}。
 
-//footnote[monorepo-versioning][なんでmono repoなのにバージョンがちぐはぐなんだ…？]
+//footnote[monorepo-versioning][なんでApollo系はmono repoなのにバージョンがちぐはぐなんだ…？]
 
- * apollo@2.6.2
- * apollo-client@2.5.1
- * apollo-link@1.2.11
- * apollo-cache-inmemory@1.5.1
-
-GraphQLの概要についてはそろそろ割愛していいと思いますので割愛します。
-Google先生で調べるか、私が技術書典5の時に書いた@<href>{https://vvakame.booth.pm/items/1055228}を参照してください。
+ * graphql organization
+ ** graphql@14.2.1
+ * apollographql organization
+ ** graphql-tools@4.0.4
+ ** graphql-tag@2.10.1
+ ** apollo@2.6.2
+ ** apollo-client@2.5.1
+ ** apollo-link@1.2.11
+ ** apollo-cache-inmemory@1.5.1
+ ** react-apollo@2.5.3
 
 さて、今回のメインのネタは"Apollo泣き言集"です。
 …と思ったんですが書き進むうちに色々調べたことのメモやらも増えてきてなんの本かわからなくてなってきた気もします。

@@ -4,7 +4,7 @@
 #@# tomo:  2章の主旨はTypeScript用の型生成に役立つユーティリティの紹介ということですかね? 先に型生成のプロセスの概要(SDLとクエリからSchema.json生成し、それを元にcodegenなどで型定義情報を生成する)があり、そのフローの中で書くユーティリティがどう役に立って素晴らしいのか書くとフレンドリーかもです
 
 GraphQLはかなり潤沢なユーティリティがあり、これらを活用できると遊びの幅が広がります。
-ここでは、graphql@<fn>{npm-graphql}とgraphql-tools@<fn>{npm-graphql-tools}について便利そうな機能をピックアップして紹介します。
+ここでは、graphql@<fn>{npm-graphql}パッケージとgraphql-tools@<fn>{npm-graphql-tools}パッケージについて便利そうな機能をピックアップして紹介します。
 graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ読み切れるし割愛でいいかな！
 
 //footnote[npm-graphql][@<href>{https://npmjs.com/package/graphql}]
@@ -14,8 +14,9 @@ graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ�
 == graphqlパッケージ
 
 まずはgraphqlパッケージから紹介していきます。
-公式ドキュメント@<fn>{docs-graphql}を読むのがおすすめです。
-不足しがちなサンプルコードを本章で摂取できます。
+graphqlパッケージはgraphql organizationからの提供で、GraphQLの仕様に対して参照実装という位置づけです。
+このパッケージについて詳しく知りたい場合は、公式ドキュメント@<fn>{docs-graphql}を読むのがおすすめです。
+ドキュメントに不足しがちなサンプルコードを本章で補っていきます。
 
 //footnote[docs-graphql][@<href>{https://graphql.github.io/graphql-js/graphql/}]
 
@@ -121,9 +122,10 @@ let schemaAST: DocumentNode = parse(`
 #@end
 //}
 
-ちなみに、grapgl-tagが返す値はparse関数と同じくDocumentNodeです。
-#@# gfx: 実体は DocumentNode だけど .d.ts での宣言はanyになってるんでな…
+ちなみに、grapgl-tagが返す値の実体はparse関数と同じくDocumentNodeです。
+#@# OK gfx: 実体は DocumentNode だけど .d.ts での宣言はanyになってるんでな…
 #@# https://github.com/apollographql/graphql-tag/pull/141 一度は型が与えられたけど問題があってrevertされたっぽい
+#@# vv: コード読んでanyになってるけど実際DocumentNodeだなーというとこまでは追ってたんだけど過去にチャレンジされたことがあったのか… てっきり怠慢かと思(ｒｙ
 
 === print関数
 
@@ -220,7 +222,7 @@ visit(query, visitWithTypeInfo(typeInfo, {
 == graphql-toolsパッケージ
 
 次はgraphql-toolsパッケージ@<fn>{docs-graphql-tools}です。
-こちらはapollographql organization配下で管理されています。
+こちらはapollographql organization配下で管理されている点に注意してください。
 
 //footnote[docs-graphql-tools][@<href>{https://www.apollographql.com/docs/graphql-tools/}]
 

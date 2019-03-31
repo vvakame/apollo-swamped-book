@@ -62,13 +62,15 @@ Componentが個別にバラバラとQueryを投げまくっていたらGraphQL�
 たとえば、Google Cloud Platformについて話したければ、GCPUG@<fn>{gcpug}のイベントやSlackに行けばいくらでも相談できたりします。
 GraphQLってそういうのってあるんですかねぇ…？
 アクティブな人@<fn>{fuckin-shy}がいるコミュニティが…！
+そしてできればまずはインターネット上に…！
 
 //footnote[gcpug][@<href>{https://gcpug.jp/} Google Cloud Platform User Group]
 //footnote[fuckin-shy][できれば僕と知り合いの人（クソ人見知り野郎並の感想）]
 
-あまり見当たらないので、会社のSlackの中で頑張ってワイワイしたりgfx先生に絡んだりしています。
+あまり見当たらないので、会社のSlackの中でワイワイしたりgfx先生に絡んだりしています。
 なんか適当にイベントやりたい…でも資料作りたくないし準備したくないのでアンカンファレンスとかがいい…。
-#@# gfx: GrahQL Tokyo はアンカンファレンスですよ！（一度だけ行ったことある; ただ具体的な問題について議論するにはあまりむかない気がした; せっかく思い出したので graphql-tokyo.slack.com に入ってみた）
+#@# OK gfx: GrahQL Tokyo はアンカンファレンスですよ！（一度だけ行ったことある; ただ具体的な問題について議論するにはあまりむかない気がした; せっかく思い出したので graphql-tokyo.slack.com に入ってみた）
+#@# vv: GraphQL Tokyoのイベント参加したことなかったのと、Slackがビタイチ動いてないので言及するのがためらわれる…！
 
 === react-apolloでApolloConsumerを使う
 

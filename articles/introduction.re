@@ -54,13 +54,15 @@ const viewerQuery = gql`
 //}
 
 クエリを@<code>{graphql-tag}に文字列テンプレートリテラルとして渡してやるだけです。
-他のFragmentの参照も@<code>{${otherFragmentDefinition\}}という感じに行うことができます。
+他のFragmentの参照も@<code>{${otherFragmentDefinition\}}という感じに自然に行うことができます。
 
-apolloでは、QueryやFragmentにはしっかり名前をつけなければいけません。
-#@# gfx: 名前つけなくても実行はできる気がするぞ？？とはいえ名前をつるのがベストプラクティスなのは確かです。あと、fagment nameはアプリ全体でユニークでないといけないです（graphql-tagの仕様な気もするが、graphql-tagもapolloの一部なので）
-#@# cf. https://github.com/apollographql/graphql-tag/blob/master/src/index.js#L45-L51
+QueryやFragmentにはしっかりとアプリケーション全体でユニークな名前をつけましょう。
+grapqhl-tagパッケージは名前を元にキャッシュをしようとしますし、apollo client:codegenによるTypeScriptの型定義の生成も名前無しだとエラーになります。
 この習慣はサーバ側でトレースを分析する時にも便利です。
 なんらかの命名規則を設け、しっかり管理するのをおすすめします。
+#@# OK gfx: 名前つけなくても実行はできる気がするぞ？？とはいえ名前をつるのがベストプラクティスなのは確かです。あと、fagment nameはアプリ全体でユニークでないといけないです（graphql-tagの仕様な気もするが、graphql-tagもapolloの一部なので）
+#@# cf. https://github.com/apollographql/graphql-tag/blob/master/src/index.js#L45-L51
+#@# vv: apollo client:codegen で怒られるので必須だと思ってた…この世に型のない世界線なんて存在したのか…
 
 ここのソースコードをapollo先生に解析してもらい、型定義情報を出力してもらいます。
 
@@ -110,11 +112,11 @@ export interface ViewerQuery {
 型定義にはクエリで要求したフィールドのみが出力されています。
 また、nullableかどうかもキチンと処理され、nullableかどうかも型として表現されています。
 
-このように、GraphQL+apolloではアプリケーション的に関心がある型を厳密に扱えるようになっています。
-#@# gfx: s/GraphQL+apollo/GraphQL+Apollo+TypeScript/
+このように、GraphQL+Apollo+TypeScriptではアプリケーション的に関心がある型を厳密に扱えるようになっています。
 ワンダフル！
 Open API（Swagger）も似たようなことができます。
 しかし、アプリケーション側の関心とサーバ側が提供する型が厳密に一致することがほぼないのが不便です。
+#@# OK gfx: s/GraphQL+apollo/GraphQL+Apollo+TypeScript/
 
 ===[column] Apolloで扱うスキーマあれこれ
 
