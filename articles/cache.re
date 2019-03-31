@@ -350,13 +350,17 @@ apollo-cache-inmemoryはoptimismパッケージ@<fn>{npm-optimism}に依存し�
 === cacheのcacheRedirectsを頼る
 
 clientのresolversより先に、cacheのcacheRedirectsで解決できないか検討する。
-クライアントローカルな処理を定義したい時、clientのresolversに実装を追加して解決したくなります。
-しかし、clientとcacheはレイヤーが分かれていて、アプリケーション→client→cacheと処理が流れていくことを忘れてはいけません。
+キャッシュのデータをキーを変えてコピー・保存したくなった場合、Apolloではそれはよくない発想です。
+基本的に同一のデータをコピーし、分散させてしまうとデータを均一に更新するのが難しく、更新差分の自動反映も難しくなります。
+よって、コピーよりはcacheRedirectsを使うべきです。
+clientのresolversを使った設計より、cacheRedirectsを使った設計にできるならそうするべきでしょう。
+そんな局面はさほど多くないかもしれませんが…。
+
+clientとcacheはレイヤーが分かれていて、アプリケーション→client→cacheと処理が流れていくことを忘れてはいけません。
 cacheのレイヤーで無理なく実装できることはcacheのレイヤーで実装するのがよいでしょう。
 
-#@# tomo: cacheRedirectsとresolverの役割は名前の通り違うので、cacheを書き換えたりする場合にcacheRedirectsを推奨してしまうのは大丈夫かな...?と思いました。CacheRedirectsはとあるクエリを投げられた場合にそのキャッシュがすでにある場合にredirectの向き先を教えてあげる仕組みでresolverはローカルステートの更新を行うためとDocumentにも書いてある(https://www.apollographql.com/docs/react/essentials/local-state)ので、そこはresolverでローカルステート更新の処理の責務を書くべきなのかなと思います。
-
-#@# TODO この辺もうちょっと具体的な理由があった気がするけど忘れた
+#@# OK tomo: cacheRedirectsとresolverの役割は名前の通り違うので、cacheを書き換えたりする場合にcacheRedirectsを推奨してしまうのは大丈夫かな...?と思いました。CacheRedirectsはとあるクエリを投げられた場合にそのキャッシュがすでにある場合にredirectの向き先を教えてあげる仕組みでresolverはローカルステートの更新を行うためとDocumentにも書いてある(https://www.apollographql.com/docs/react/essentials/local-state)ので、そこはresolverでローカルステート更新の処理の責務を書くべきなのかなと思います。
+#@# vv: cacheRedirectsではキャッシュキーを返す以外の処理はやらないほうがよいというのは同意で、それが伝わりやすい方向に文を改めてみました。
 
 === クライアント側独自の型をなるべく作らない
 

@@ -1,10 +1,11 @@
-= graphql関連の素晴らしきユーティリティたち
+= Apollo/GraphQLの素晴らしきユーティリティたち
 
-#@# tomo: graphql と Apolloのライブラリが一緒に説明されているので"Apollo/graphql関連の" のほうがよいかもです。
-#@# tomo:  2章の主旨はTypeScript用の型生成に役立つユーティリティの紹介ということですかね? 先に型生成のプロセスの概要(SDLとクエリからSchema.json生成し、それを元にcodegenなどで型定義情報を生成する)があり、そのフローの中で書くユーティリティがどう役に立って素晴らしいのか書くとフレンドリーかもです
+#@# OK tomo: graphql と Apolloのライブラリが一緒に説明されているので"Apollo/graphql関連の" のほうがよいかもです。
+#@# OK tomo:  2章の主旨はTypeScript用の型生成に役立つユーティリティの紹介ということですかね? 先に型生成のプロセスの概要(SDLとクエリからSchema.json生成し、それを元にcodegenなどで型定義情報を生成する)があり、そのフローの中で書くユーティリティがどう役に立って素晴らしいのか書くとフレンドリーかもです
+#@# vv: あまり何も考えず、自分が知りたかったので調べて書きました…！
 
-GraphQLはかなり潤沢なユーティリティがあり、これらを活用できると遊びの幅が広がります。
-ここでは、graphql@<fn>{npm-graphql}パッケージとgraphql-tools@<fn>{npm-graphql-tools}パッケージについて便利そうな機能をピックアップして紹介します。
+本章で紹介する関数を上手に組み合わせるとGraphQL SDLとIntrospectionQueryからapollo client:codegenに使うschema.jsonを生成したり、モックSchemaを作成したり、様々なラクを得ることができます。
+特に、graphql@<fn>{npm-graphql}パッケージとgraphql-tools@<fn>{npm-graphql-tools}パッケージに含まれる便利な機能をピックアップして紹介します。
 graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ読み切れるし割愛でいいかな！
 
 //footnote[npm-graphql][@<href>{https://npmjs.com/package/graphql}]
