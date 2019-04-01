@@ -4,7 +4,7 @@
 #@# OK tomo:  2章の主旨はTypeScript用の型生成に役立つユーティリティの紹介ということですかね? 先に型生成のプロセスの概要(SDLとクエリからSchema.json生成し、それを元にcodegenなどで型定義情報を生成する)があり、そのフローの中で書くユーティリティがどう役に立って素晴らしいのか書くとフレンドリーかもです
 #@# vv: あまり何も考えず、自分が知りたかったので調べて書きました…！
 
-本章で紹介する関数を上手に組み合わせるとGraphQL SDLとIntrospectionQueryからapollo client:codegenに使うschema.jsonを生成したり、モックSchemaを作成したり、様々なラクを得ることができます。
+本章で紹介する関数を上手に組み合わせるとGraphQL SDLとIntrospectionQueryからapollo client:codegenに使うschema.jsonを生成したり、モックSchemaを作成したり、さまざまなラクを得ることができます。
 特に、graphql@<fn>{npm-graphql}パッケージとgraphql-tools@<fn>{npm-graphql-tools}パッケージに含まれる便利な機能をピックアップして紹介します。
 graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ読み切れるし割愛でいいかな！
 
@@ -16,7 +16,7 @@ graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ�
 
 まずはgraphqlパッケージから紹介していきます。
 graphqlパッケージはgraphql organizationからの提供で、GraphQLの仕様に対して参照実装という位置づけです。
-このパッケージについて詳しく知りたい場合は、公式ドキュメント@<fn>{docs-graphql}を読むのがおすすめです。
+このパッケージについて詳しく知りたい場合は、公式ドキュメント@<fn>{docs-graphql}を読むのがお勧めです。
 ドキュメントに不足しがちなサンプルコードを本章で補っていきます。
 
 //footnote[docs-graphql][@<href>{https://graphql.github.io/graphql-js/graphql/}]
@@ -185,7 +185,7 @@ visit(query, {
 //}
 
 visitorで参照しているnodeの型を知りたい場合があります。
-その時はTypeInfoのインスタンスを作成し、visitWithTypeInfo関数を併用することで型情報を得ることができます。
+そのときはTypeInfoのインスタンスを作成し、visitWithTypeInfo関数を併用することで型情報を得ることができます。
 
 //list[TypeInfo][TypeInfoを併用して型を得る]{
 #@maprange(../code/lib-examples/src/graphql.test.ts,TypeInfo)
