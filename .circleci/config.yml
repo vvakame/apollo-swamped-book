@@ -5,6 +5,9 @@ jobs:
       - image: vvakame/review:3.0
     steps:
       - checkout
+      - run: |
+          git submodule sync
+          git submodule update --init
       - restore_cache:
           keys:
             - npm-cache-{{ checksum "package-lock.json" }}
