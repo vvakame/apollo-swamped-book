@@ -3,7 +3,7 @@
 技術書典5ではGraphQLサーバをGo言語で作るというネタをやりました。
 今回は、所変わってクライアント側を普通にApollo+TypeScript+Reactでクライアント側をやっていきつつある話をします。
 GraphQLの概要についてはそろそろ割愛していいと思いますので割愛します。
-Google先生で調べるか、私が技術書典5の時に書いた@<href>{https://vvakame.booth.pm/items/1055228}を参照してください。
+Google先生で調べるか、私が技術書典5のときに書いた@<href>{https://vvakame.booth.pm/items/1055228}を参照してください。
 
 本書の内容は次のバージョンを前提に解説しています@<fn>{monorepo-versioning}。
 

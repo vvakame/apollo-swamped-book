@@ -21,13 +21,15 @@
     "global-bundler": "gem install bundler",
     "global": "npm run global-bundler",
     "postinstall": "bundle install",
+    "check:prh": "prh --verify --verbose articles/*.re",
+    "check": "npm run check:prh",
     "pdf": "grunt pdf",
     "md": "grunt markdown",
     "html": "grunt html",
     "text": "grunt text",
     "epub": "grunt epub",
     "web": "grunt web",
-    "test": "npm run html"
+    "test": "npm run check && npm run html"
   },
   "dependencies": {},
   "devDependencies": {
@@ -36,6 +38,7 @@
     "grunt-contrib-clean": "^2.0.0",
     "grunt-shell": "^3.0.1",
     "js-yaml": "^3.6.0",
-    "load-grunt-tasks": "^4.0.0"
+    "load-grunt-tasks": "^4.0.0",
+    "prh": "^5.4.3"
   }
 }

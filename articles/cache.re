@@ -67,7 +67,7 @@ type Cat {
 
 //footnote[apollo-custom-scalar-type][@<href>{https://www.apollographql.com/docs/graphql-tools/scalars.html}]
 
-更に調べていくとクライアント側のcustom scalar typeサポートはまだ存在していません@<fn>{apollo-client-side-custrom-scalar}。
+さらに調べていくとクライアント側のcustom scalar typeサポートはまだ存在していません@<fn>{apollo-client-side-custrom-scalar}。
 サポートされていない、というのは値の形式変換が暗黙理にできないというだけで、実用上少し苦労するだけで、一応普通に使えます。
 
 //footnote[apollo-client-side-custrom-scalar][@<href>{https://github.com/apollographql/apollo-feature-requests/issues/2}]
@@ -144,14 +144,14 @@ Object.keys(cache.extract()).forEach(cacheKey => console.log(cacheKey));
 人類がこんなことで苦しまなければいけないのは馬鹿げていますね。
 
 この挙動はドキュメントには明記されていないように見えますし、ひたすらデバッガ片手に処理を追いかけていかないと原因がわかりませんでした。
-最終的に、設計思想と自分の考え方にミスマッチがありうまく行っていないことがわかるまで非常に苦労しました。
+最終的に、設計思想と自分の考え方にミスマッチがありうまく行っていないことが分かるまで非常に苦労しました。
 壊れたデータを書いてしまった場合でも警告などが得られないパターンもあり、それなのに一見関係ないQueryで結果がおかしくなったりして本当に罠みが高いです。
 
 @<code>{cache.writeData}は罠！GraphQLでコードを書くというのにスキーマレスになりうるパーツを使うのは罪！
 そのことを強く胸に刻みこんで生きていきましょう。
 Issueも書いてみた@<fn>{apollo-issue-4554}のですが、反応まるでないし@<code>{cache.writeFragment}か@<code>{cache.writeQuery}使え、で終わりそうではあります。
 
-//footnote[apollo-issue-4554][@<href>{https://github.com/apollographql/apollo-client/issues/4554} まぁ筋の良い話ではなさそう]
+//footnote[apollo-issue-4554][@<href>{https://github.com/apollographql/apollo-client/issues/4554} まぁ筋のよい話ではなさそう]
 
 どういう方向性で実装するのがよかったかを解説します。
 @<code>{cache.writeFragment}か@<code>{cache.writeQuery}を常に使うのが正しいです。
@@ -324,7 +324,7 @@ console.log(JSON.stringify(result));
 
 == ドハマリ回避のために
 
-皆さんにおすすめしたいのが、とりあえずハマる前にキャッシュ関係のソースコードを読め！ということです。
+皆さんにお勧めしたいのが、とりあえずハマる前にキャッシュ関係のソースコードを読め！ということです。
 apollo-cacheの実装@<fn>{apollo-cache-src}を読んでみて驚くのは、そのコード量の少なさです。
 めっちゃサクサク読める！
 前述の@<code>{writeData}の実装や、@<code>{writeFragment}、@<code>{writeQuery}がどういう挙動をしようとしているのか把握しておくとドハマリが避けられます。
@@ -364,7 +364,7 @@ cacheのレイヤーで無理なく実装できることはcacheのレイヤー�
 
 === クライアント側独自の型をなるべく作らない
 
-ローカルに状態を持つ時、可能な限り独自のtypeやらを定義しない。
+ローカルに状態をもつ時、可能な限り独自のtypeやらを定義しない。
 単純に@<code>{__typename}やら@<code>{id}やら、そのルールを定義しメンテするのがめんどくさいからです。
 そして、キャッシュの仕組み上@<code>{__typename}と@<code>{id}が定義できないような構造を導入すると痛い目を見ることになります。
 フィールドがたくさんあると、初期状態に適当なデフォルト値をセットするのが面倒…というのもあるのですが、その苦労はこなしておくのが妥当です。
@@ -401,5 +401,5 @@ GraphQLはクエリであるため、関数を持ちません。
  ** ほげほげを編集する時ほげほげEditみたいな型をローカル側で作らない 元のデータ型のまま扱う Submit時のInputへの変形はReactのレベルで頑張る
  5. @export で頑張ったりするのはかなりつらい
  ** ID に対して null だったら Boolean! に変換するみたいなのがつらい
- ** 動的に引数が変わるようなコード書くと、query と variables の組み合わせが変わるのでrefetchQueryが意図どおり適用されない疑惑がある(勘違いの可能性もあるので要検証)
+ ** 動的に引数が変わるようなコード書くと、query と variables の組み合わせが変わるのでrefetchQueryが意図どおり適用されない疑惑がある（勘違いの可能性もあるので要検証）
 //}

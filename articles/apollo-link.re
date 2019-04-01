@@ -2,7 +2,7 @@
 
 apollo-clientはなかなか素敵な仕組みを持っています。
 Apollo Link@<fn>{apollo-link}です。
-これを使うと様々な魔術が可能になるので、これについて取り上げます。
+これを使うとさまざまな魔術が可能になるので、これについて取り上げます。
 
 //footnote[apollo-link][@<href>{https://www.apollographql.com/docs/link/}]
 
@@ -51,7 +51,7 @@ export declare class ApolloLink {
 
 == Apollo Linkでサーバ側実装なしにコードを組む
 
-まずは肩慣らしに、デモ作成の時に便利なネットワークアクセス無しでクエリを処理するApollo Linkを作ってみます。
+まずは肩慣らしに、デモ作成のときに便利なネットワークアクセス無しでクエリを処理するApollo Linkを作ってみます。
 発想としては、@<chapref>{utilities}で紹介した関数を組み合わせ、schema.jsonからschemaを作成し、それにmockのresolverを仕込み、そいつにクエリを処理させます。
 実装は@<list>{link-example/src/index.ts}のようになりました。
 
@@ -110,8 +110,8 @@ ApolloLinkでObservableを作成し、返す。
 つまり、サーバ無しに開発を進めることができるわけです。
 便利ですね。
 
-この例を見てわかるのは、リクエストはOperationとして各linkに到達し、linkは自分がそれを処理できるのであれば何らかの方法で結果を作成して返せればよい、ということです。
-GraphQLではトランスポートレイヤーの規定などは使用上何も存在しないため、様々なプロトコルにリクエストを乗せることができるのです。
+この例を見て分かるのは、リクエストはOperationとして各linkに到達し、linkは自分がそれを処理できるのであれば何らかの方法で結果を作成して返せればよい、ということです。
+GraphQLではトランスポートレイヤーの規定などは使用上何も存在しないため、さまざまなプロトコルにリクエストを乗せることができるのです。
 
 == Subscriptionを何かしらのPushとQueryに変換する
 
