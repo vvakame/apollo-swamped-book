@@ -380,6 +380,7 @@ cacheのレイヤーで無理なく実装できることはcacheのレイヤー�
 
 === @export に頼らない
 
+#@# prh:disable
 @<code>{@export}を利用して頑張ろうとしない。
 GraphQLはクエリであるため、関数を持ちません。
 これは真面目に考えるとなかなか厄介で、@<code>{ID}を@<code>{Boolean}に変換することができません。
