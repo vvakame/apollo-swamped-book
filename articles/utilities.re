@@ -4,10 +4,10 @@
 #@# OK tomo:  2章の主旨はTypeScript用の型生成に役立つユーティリティの紹介ということですかね? 先に型生成のプロセスの概要(SDLとクエリからSchema.json生成し、それを元にcodegenなどで型定義情報を生成する)があり、そのフローの中で書くユーティリティがどう役に立って素晴らしいのか書くとフレンドリーかもです
 #@# vv: あまり何も考えず、自分が知りたかったので調べて書きました…！
 
-本章で紹介する関数を上手に組み合わせるとGraphQL SDLとIntrospectionQueryからapollo client:codegenに使うschema.jsonを生成したり、モックSchemaを作成したり、さまざまなラクを得ることができます。
-#@# REVIEW sota1235: 重箱隅ですが、"ラク"より"恩恵"とかのほうがスンッと入ってくる気がします
+本章で紹介する関数を上手に組み合わせるとGraphQL SDLとIntrospectionQueryからapollo client:codegenに使うschema.jsonを生成したり、モックSchemaを作成したり、さまざまな恩恵を得ることができます。
 特に、graphql@<fn>{npm-graphql}パッケージとgraphql-tools@<fn>{npm-graphql-tools}パッケージに含まれる便利な機能をピックアップして紹介します。
 graphql-tag@<fn>{npm-graphql-tag}は使い方簡単だし…コードもすぐ読み切れるし割愛でいいかな！
+#@# REVIEW OK sota1235: 重箱隅ですが、"ラク"より"恩恵"とかのほうがスンッと入ってくる気がします
 
 //footnote[npm-graphql][@<href>{https://npmjs.com/package/graphql}]
 //footnote[npm-graphql-tools][@<href>{https://npmjs.com/package/graphql-tools}]
@@ -24,10 +24,10 @@ graphqlパッケージはgraphql organizationからの提供で、GraphQLの仕�
 
 AST関連やスキーマ関連の便利関数が揃っていて、メタな処理をしたい時に役立ちます。
 
-特に断りのない場合は未知の関数や型が出てきた場合、graphqlパッケージからimportしてきたものとします。
-#@# REVIEW sota1235: "特に断りのない場合は" => "特に断りなく"のほうが読みやすそうです
+特に断りなく未知の関数や型が出てきた場合、graphqlパッケージからimportしてきたものとします。
 たとえば、@<code>{GraphQLSchema}と@<code>{buildSchema}が出てきた場合、@<code>{import { GraphQLSchema, buildSchema \} from "graphql";}というコードがあるものと考えてください。
 @<code>{schema}は頻出のため、同名の変数が出てきた場合は@<code>{buildSchema}関数で作られた@<code>{GraphQLSchema}型とします。
+#@# REVIEW OK sota1235: "特に断りのない場合は" => "特に断りなく"のほうが読みやすそうです
 
 === buildSchema関数
 
@@ -60,11 +60,12 @@ let schemaStr1 = `
   }
 `;
 const schema: GraphQLSchema = buildSchema(schemaStr1);
+// schemaStr1と等価
 let schemaStr2: string = printSchema(schema);
 #@end
 //}
 
-#@# REVIEW sota1235: 細かいですが最後の行の後ろにコメントで`schemaStr1と等価`みたいなコメントがあるとわかりやすいかもです
+#@# REVIEW OK sota1235: 細かいですが最後の行の後ろにコメントで`schemaStr1と等価`みたいなコメントがあるとわかりやすいかもです
 
 === graphql関数
 
@@ -233,15 +234,15 @@ visit(query, visitWithTypeInfo(typeInfo, {
 
 こちらにもいくつか有用なユーティリティがあるので抜粋して紹介します。
 
-特に断りのない場合、未知の関数や型が出てきた場合、graphql-toolsパッケージからimportしてきたものとします。
-#@# REVIEW sota1235: 27行目と表記ゆれしてます！統一してあげるとよさそう
+特に断りなく未知の関数や型が出てきた場合、graphql-toolsパッケージからimportしてきたものとします。
 graphql関数についてはgraphqlパッケージからimportしてきたものとします。
+#@# REVIEW OK sota1235: 27行目と表記ゆれしてます！統一してあげるとよさそう
 
 === makeExecutableSchema関数
 
-Resolverなど、実際に動作させるために必要な要素を組み込んだSchemaを作成します（@<list>{makeExecutableSchema}）。
-#@# REVIEW sota1235: 実際に"何を"動作させるのかぱっとわかりづらいので、主語を入れてあげるとよさそうです(GraphQLサーバ、かな？)
+GraphQLサーバと同等の動作をさせるために必要な、不足しているResolverなどの要素をSchemaに組み込みます（@<list>{makeExecutableSchema}）。
 クライアント側の実装を行う時にはあまり使わない…かと思いきや、Apolloのドキュメントを参考にコードを書いていると案外出会います。
+#@# REVIEW OK sota1235: 実際に"何を"動作させるのかぱっとわかりづらいので、主語を入れてあげるとよさそうです(GraphQLサーバ、かな？)
 
 //list[makeExecutableSchema][makeExecutableSchema関数]{
 #@maprange(../code/lib-examples/src/graphql-tools.test.ts,makeExecutableSchema)
@@ -275,7 +276,6 @@ Mockに使う関数やらリストやらをカスタマイズすることもで�
 
 //list[addMockFunctionsToSchema][addMockFunctionsToSchema関数]{
 #@maprange(../code/lib-examples/src/graphql-tools.test.ts,addMockFunctionsToSchema)
-// schemaのresolversに適当な値を詰めて返してくれるモック関数をセットしてくれる
 const typeDefs = `
   type Query {
     foo: String
@@ -291,6 +291,7 @@ const resolvers = {
   typeDefs,
   resolvers,
 });
+// schemaのresolversに適当な値を詰めて返してくれるモック関数をセットしてくれる
 addMockFunctionsToSchema({
   schema,
   mocks: {

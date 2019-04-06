@@ -26,6 +26,7 @@ describe("graphql", () => {
 			}
 		`;
 		const schema: GraphQLSchema = buildSchema(schemaStr1);
+		// schemaStr1と等価
 		let schemaStr2: string = printSchema(schema);
 		// #@@range_end(printSchema)
 		expect(schemaStr2).toMatchSnapshot();

@@ -60,8 +60,8 @@ describe("graphql-tools", () => {
 		// 単なる addMockFunctionsToSchema のラッパ
 	});
 	it("addMockFunctionsToSchema", async () => {
-		// #@@range_begin(addMockFunctionsToSchema)
 		// schemaのresolversに適当な値を詰めて返してくれるモック関数をセットしてくれる
+		// #@@range_begin(addMockFunctionsToSchema)
 		const typeDefs = `
 			type Query {
 				foo: String
@@ -78,6 +78,7 @@ describe("graphql-tools", () => {
 			typeDefs,
 			resolvers,
 		});
+		// schemaのresolversに適当な値を詰めて返してくれるモック関数をセットしてくれる
 		addMockFunctionsToSchema({
 			schema,
 			mocks: {

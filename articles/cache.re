@@ -350,8 +350,8 @@ apollo-cache-inmemoryはoptimismパッケージ@<fn>{npm-optimism}に依存し�
 === cacheのcacheRedirectsを頼る
 
 clientのresolversより先に、cacheのcacheRedirectsで解決できないか検討する。
-キャッシュのデータをキーを変えてコピー・保存したくなった場合、Apolloではそれはよくない発想です。
-#@# REVIEW sota1235: "キャッシュのデータを"の直後に句読点を入れたほうが読みやすそうです
+キャッシュのデータを、キーを変えコピー・保存したくなった場合、Apolloではそれはよくない発想です。
+#@# REVIEW OK sota1235: "キャッシュのデータを"の直後に句読点を入れたほうが読みやすそうです
 基本的に同一のデータをコピーし、分散させてしまうとデータを均一に更新するのが難しく、更新差分の自動反映も難しくなります。
 よって、コピーよりはcacheRedirectsを使うべきです。
 clientのresolversを使った設計より、cacheRedirectsを使った設計にできるならそうするべきでしょう。
